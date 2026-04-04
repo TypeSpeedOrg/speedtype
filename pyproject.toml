@@ -1,0 +1,15 @@
+[project]
+name = "speedtype"
+version = "0.1.0"
+description = "TUI for training typing speed."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "textual>=8.2.1",
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.12.0",
+    "textual-dev>=1.8.0",
+]
