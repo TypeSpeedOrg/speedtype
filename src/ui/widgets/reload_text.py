@@ -8,5 +8,6 @@ class ReloadText(MenuIsland):
     def compose(self) -> ComposeResult:
         yield MenuIslandButton(
             label="RELOAD",
+            value=None,
             persist_click=False,
         )

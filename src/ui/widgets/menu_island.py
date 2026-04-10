@@ -1,17 +1,18 @@
 import asyncio
 
+from rich.repr import Result
 from textual.app import ComposeResult
 from textual.events import Click, Enter, Leave
-from textual.widget import Widget
+from textual.message import Message
 from textual.widgets import Static
 
-from ui.css.classes import CSSClass
+from ui.constants.classes import CSSClass
+from ui.widgets.base import BaseWidget
 
 
-class MenuIsland(Widget):
+class MenuIsland(BaseWidget):
     DEFAULT_CSS = """
     MenuIsland {
-        background: #101224;
         width: auto;
         height: auto;
         margin: 1;
@@ -20,13 +21,14 @@ class MenuIsland(Widget):
     """
 
 
-class MenuIslandText(Widget):
+class MenuIslandText(BaseWidget):
     DEFAULT_CSS = """
     MenuIslandText {
         color: #5f647a;
         height: auto;
         width: auto;
         padding: 1 3;
+        background: #101224;
     }
     """
 
@@ -41,9 +43,10 @@ class MenuIslandText(Widget):
         event.stop()
 
 
-class MenuIslandButton(Widget):
+class MenuIslandButton(BaseWidget):
     DEFAULT_CSS = f"""
     MenuIslandButton {{
+        background: #101224;
         color: #5f647a;
         height: auto;
         width: auto;
@@ -57,15 +60,26 @@ class MenuIslandButton(Widget):
     }}
     """
 
+    class Pressed(Message):
+
+        def __init__(self, value: str) -> None:
+            self.value = value
+            super().__init__()
+
+        def __rich_repr__(self) -> Result:
+            yield "value", self.value
+
     def __init__(
         self,
         *args,
         label: str,
+        value: str | None,
         persist_click: bool,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self._label = label
+        self._value = value
         self._persist_click = persist_click
 
     def compose(self) -> ComposeResult:
@@ -83,3 +97,10 @@ class MenuIslandButton(Widget):
         if not self._persist_click:
             await asyncio.sleep(0.1)
             self.remove_class(CSSClass.SELECTED)
+
+        event.stop()
+        self.post_message(self.Pressed(value=self._value))
+
+    @property
+    def value(self) -> str:
+        return self._value

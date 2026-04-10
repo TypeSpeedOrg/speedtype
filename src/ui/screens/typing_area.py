@@ -21,7 +21,7 @@ class TypingScreen(Screen):
     * Global rating of other speedtypers
     """
 
-    CSS_PATH = "../css/speedtype.tcss"
+    CSS_PATH = "speedtype.tcss"
 
     def compose(self) -> ComposeResult:
         yield Container()

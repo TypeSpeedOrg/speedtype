@@ -1,9 +1,10 @@
 from textual.app import ComposeResult
-from textual.widget import Widget
-from textual.widgets import Label, Static
+from textual.widgets import Label
+
+from ui.widgets.base import BaseWidget
 
 
-class TypingArea(Widget):
+class TypingArea(BaseWidget):
     DEFAULT_CLASSES = "text_area"
 
     def compose(self) -> ComposeResult:

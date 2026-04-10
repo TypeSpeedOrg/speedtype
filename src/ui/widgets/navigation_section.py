@@ -3,7 +3,7 @@ from enum import StrEnum
 from textual.app import ComposeResult
 
 from ui.widgets.menu_island import MenuIsland
-from ui.widgets.select_menu_island import SectionMenuIsland
+from ui.widgets.section_menu_island import SectionMenuIsland, SectionOption
 
 
 class NavigationSection(MenuIsland):
@@ -16,9 +16,19 @@ class NavigationSection(MenuIsland):
     def compose(self) -> ComposeResult:
         yield SectionMenuIsland(
             options=(
-                self.Section.PROFILE,
-                self.Section.STATS,
-                self.Section.RATING,
+                SectionOption(
+                    label=self.Section.PROFILE,
+                    value=None,
+                ),
+                SectionOption(
+                    label=self.Section.STATS,
+                    value=None,
+                ),
+                SectionOption(
+                    label=self.Section.RATING,
+                    value=None,
+                ),
             ),
             persistent=False,
+            is_vertical=False,
         )
