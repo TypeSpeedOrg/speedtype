@@ -3,9 +3,11 @@ from enum import StrEnum
 from textual.app import ComposeResult
 
 from ui.constants.classes import CSSClass
-from ui.widgets.base import BaseWidget
 from ui.widgets.menu_island import MenuIsland, MenuIslandText
-from ui.widgets.section_menu_island import SectionMenuIsland, SectionOption
+from ui.widgets.section_menu_island import (
+    MultipleSectionMenuIsland, SectionConfiguration, SectionMenuIsland,
+    SectionOption,
+)
 
 
 class TextConfiguration(MenuIsland):
@@ -25,6 +27,15 @@ class TextConfiguration(MenuIsland):
         ENGLISH = "ENGLISH"
         RUSSIAN = "РУССКИЙ"
         UKRAINIAN = "УКРАЇНСЬКА"
+
+    class WordsLength(StrEnum):
+        SHORT_WORDS = "SHORT WORDS"
+        REGULAR_WORDS = "REGULAR WORDS"
+        LONG_WORDS = "LONG WORDS"
+
+    class AdditionalSymbols(StrEnum):
+        PUNCTUATION = "PUNCTUATION"
+        SPECIAL_CHARACTERS = "SPECIAL CHARACTERS"
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -74,7 +85,42 @@ class TextConfiguration(MenuIsland):
                 persistent=True,
                 is_vertical=True,
             ),
-            self.Configuration.DIFFICULTY: BaseWidget(),  # mock
+            self.Configuration.DIFFICULTY: MultipleSectionMenuIsland(
+                section_configs=(
+                    SectionConfiguration(
+                        options=(
+                            SectionOption(
+                                label=self.WordsLength.SHORT_WORDS,
+                                value=self.WordsLength.SHORT_WORDS,
+                            ),
+                            SectionOption(
+                                label=self.WordsLength.REGULAR_WORDS,
+                                value=self.WordsLength.REGULAR_WORDS,
+                                css_class=CSSClass.SELECTED,
+                            ),
+                            SectionOption(
+                                label=self.WordsLength.LONG_WORDS,
+                                value=self.WordsLength.LONG_WORDS,
+                            ),
+                        ),
+                        name="words_length",
+                    ),
+                    SectionConfiguration(
+                        options=(
+                            SectionOption(
+                                label=self.AdditionalSymbols.PUNCTUATION,
+                                value=self.AdditionalSymbols.PUNCTUATION,
+                            ),
+                            SectionOption(
+                                label=self.AdditionalSymbols.SPECIAL_CHARACTERS,
+                                value=self.AdditionalSymbols.SPECIAL_CHARACTERS,
+                            ),
+                        ),
+                        name="additional_symbols",
+                        is_multiple_options=True,
+                    ),
+                )
+            ),
         }
         self._text_config: dict[TextConfiguration.Configuration, str] = {}
 

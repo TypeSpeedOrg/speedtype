@@ -4,7 +4,7 @@ from rich.repr import Result
 from textual.app import ComposeResult
 from textual.events import Click, Enter, Leave
 from textual.message import Message
-from textual.widgets import Static
+from textual.widgets import Label
 
 from ui.constants.classes import CSSClass
 from ui.widgets.base import BaseWidget
@@ -37,7 +37,7 @@ class MenuIslandText(BaseWidget):
         self._label = label
 
     def compose(self) -> ComposeResult:
-        yield Static(self._label)
+        yield Label(self._label)
 
     def on_click(self, event: Click) -> None:
         event.stop()
@@ -83,7 +83,7 @@ class MenuIslandButton(BaseWidget):
         self._persist_click = persist_click
 
     def compose(self) -> ComposeResult:
-        yield Static(self._label)
+        yield Label(self._label)
 
     def on_enter(self, event: Enter) -> None:
         self.add_class(CSSClass.HOVER)

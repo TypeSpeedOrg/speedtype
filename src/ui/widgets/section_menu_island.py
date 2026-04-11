@@ -1,11 +1,9 @@
 from typing import NamedTuple
 
-from funcy import first
 from rich.repr import Result
 from textual.app import ComposeResult
 from textual.events import Mount
 from textual.message import Message
-from textual.reactive import reactive
 
 from ui.constants.classes import CSSClass
 from ui.widgets.base import BaseWidget
@@ -21,6 +19,12 @@ class SectionOption(NamedTuple):
     css_class: str | None = None
 
 
+class SectionConfiguration(NamedTuple):
+    options: tuple[SectionOption, ...]
+    name: str | None = None
+    is_multiple_options: bool = False
+
+
 class SectionMenuIsland(BaseWidget):
     DEFAULT_CSS = """
     SectionMenuIsland {
@@ -29,7 +33,6 @@ class SectionMenuIsland(BaseWidget):
         width: auto;
     }
     """
-    selected_option: reactive[str | None] = reactive(None)
 
     class OptionSelected(Message):
 
@@ -42,6 +45,9 @@ class SectionMenuIsland(BaseWidget):
             yield "value", self.value
             yield "section_name", self.section_name
 
+    class OptionRemoved(OptionSelected):
+        pass
+
     def __init__(
         self,
         *args,
@@ -49,6 +55,7 @@ class SectionMenuIsland(BaseWidget):
         persistent: bool,
         is_vertical: bool,
         name: str | None = None,
+        is_multiple_options: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -56,47 +63,79 @@ class SectionMenuIsland(BaseWidget):
         self._options = options
         self._persistent = persistent
         self._name = name
+        self._is_vertical = is_vertical
+        self._multiple_options = is_multiple_options
         self.styles.layout = 'vertical' if is_vertical else 'horizontal'
 
-        if option := first(filter(lambda opt: CSSClass.SELECTED == opt.css_class, self._options)):
-            self.set_reactive(
-                SectionMenuIsland.selected_option,
-                option.value,
-            )
+        self._selected_options = [option.value for option in self._options if CSSClass.SELECTED == option.css_class]
 
     def compose(self) -> ComposeResult:
+        max_width = max(map(lambda opt: len(opt.label), self._options))
+
         for option in self._options:
-            yield MenuIslandButton(
+            button = MenuIslandButton(
                 label=option.label,
                 classes=option.css_class,
                 persist_click=self._persistent,
                 value=option.value,
             )
 
+            if self._is_vertical:
+                button.styles.width = max_width + 6
+
+            yield button
+
     def on_menu_island_button_pressed(self, event: MenuIslandButton.Pressed) -> None:
         if not self._persistent:
             return
 
-        self.selected_option = event.value
+        option = event.value
+
+        if self._multiple_options and option not in self._selected_options:
+            self._selected_options.append(option)
+            self.post_message(
+                self.OptionSelected(
+                    value=option,
+                    section_name=self._name,
+                )
+            )
+
+        elif self._multiple_options and option in self._selected_options:
+            self._selected_options.remove(option)
+            self.post_message(
+                self.OptionRemoved(
+                    value=option,
+                    section_name=self._name,
+                )
+            )
+
+            for selected_button in self.query_children(MenuIslandButton).filter(f".{CSSClass.SELECTED}"):
+                if selected_button.value == option:
+                    selected_button.remove_class(CSSClass.SELECTED)
+
+        elif not self._multiple_options and option not in self._selected_options:
+            self._selected_options = [option]
+            self.post_message(
+                self.OptionSelected(
+                    value=option,
+                    section_name=self._name,
+                )
+            )
+
+            for selected_button in self.query_children(MenuIslandButton).filter(f".{CSSClass.SELECTED}"):
+                if selected_button.value != option:
+                    selected_button.remove_class(CSSClass.SELECTED)
+
         event.stop()
 
     def on_mount(self, event: Mount) -> None:
-        self._process_selected_option()
-
-    def watch_selected_option(self) -> None:
-        self._process_selected_option()
-
-    def _process_selected_option(self):
-        for selected_button in self.query_children(MenuIslandButton).filter(f".{CSSClass.SELECTED}"):
-            if selected_button.value != self.selected_option:
-                selected_button.remove_class(CSSClass.SELECTED)
-
-        self.post_message(
-            self.OptionSelected(
-                value=self.selected_option,
-                section_name=self._name,
+        for option in self._selected_options:
+            self.post_message(
+                self.OptionSelected(
+                    value=option,
+                    section_name=self._name,
+                )
             )
-        )
 
 
 class MultipleSectionMenuIsland(BaseWidget):
@@ -111,16 +150,18 @@ class MultipleSectionMenuIsland(BaseWidget):
     def __init__(
         self,
         *args,
-        sections: tuple[SectionOptions, ...],
+        section_configs: tuple[SectionConfiguration, ...],
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._sections = sections
+        self._section_configs = section_configs
 
     def compose(self) -> ComposeResult:
-        for section_options in self._sections:
+        for config in self._section_configs:
             yield SectionMenuIsland(
-                options=section_options,
+                options=config.options,
                 persistent=True,
                 is_vertical=True,
+                name=config.name,
+                is_multiple_options=config.is_multiple_options,
             )
