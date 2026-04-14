@@ -23,11 +23,20 @@ class TypingScreen(Screen):
     DEFAULT_CSS = """
     TypingScreen {
         background: #1a1d36;
-        layout: grid;
-        grid-size: 1;
-        grid-rows: 27% 30 auto;
+        layout: vertical;
+        overflow: hidden auto;
     
+        .top {
+            min-height: 0;
+            max-height: 20;
+        }
+
+        .middle {
+            height: 30;
+        }
+
         .bottom {
+            min-height: 7;
             layout: horizontal;
             width: 100%;
             align: center top;
@@ -39,8 +48,11 @@ class TypingScreen(Screen):
     CSS_PATH = "speedtype.tcss"
 
     def compose(self) -> ComposeResult:
-        yield Container()
-        yield TypingArea()
+        yield Container(classes="top")
+
+        with Container(classes="middle"):
+            yield TypingArea()
+
         with Container(classes="bottom"):
             yield ReloadText()
             yield NavigationSection()
