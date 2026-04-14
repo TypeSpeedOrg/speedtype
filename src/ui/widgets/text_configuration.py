@@ -1,6 +1,8 @@
 from enum import StrEnum
 
+from rich.repr import Result
 from textual.app import ComposeResult
+from textual.message import Message
 
 from ui.constants.classes import CSSClass
 from ui.widgets.menu_island import MenuIsland, MenuIslandText
@@ -8,6 +10,9 @@ from ui.widgets.section_menu_island import (
     MultipleSectionMenuIsland, SectionConfiguration, SectionMenuIsland,
     SectionOption,
 )
+
+
+type TextConfig = dict[TextConfiguration.Configuration, list[str]]
 
 
 class TextConfiguration(MenuIsland):
@@ -36,6 +41,15 @@ class TextConfiguration(MenuIsland):
     class AdditionalSymbols(StrEnum):
         PUNCTUATION = "PUNCTUATION"
         SPECIAL_CHARACTERS = "SPECIAL CHARACTERS"
+
+    class ConfigUpdated(Message):
+
+        def __init__(self, text_config: TextConfig) -> None:
+            self.text_config = text_config
+            super().__init__()
+
+        def __rich_repr__(self) -> Result:
+            yield "text_config", self.text_config
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -122,7 +136,7 @@ class TextConfiguration(MenuIsland):
                 )
             ),
         }
-        self._text_config: dict[TextConfiguration.Configuration, str] = {}
+        self._text_config: TextConfig = {}
 
         self._customization_sections_name = 'config_menu'
         self._customization_sections = SectionMenuIsland(
@@ -155,7 +169,8 @@ class TextConfiguration(MenuIsland):
 
     def on_section_menu_island_option_selected(self, event: SectionMenuIsland.OptionSelected) -> None:
         if event.section_name != self._customization_sections_name:
-            self._text_config[event.section_name] = event.value
+            self._text_config.setdefault(event.section_name, []).append(event.value)
+            self.post_message(self.ConfigUpdated(text_config=self._text_config))
             return
 
         selected_section_name = event.value
@@ -166,3 +181,9 @@ class TextConfiguration(MenuIsland):
                 section.show()
             else:
                 section.hide()
+
+    def on_section_menu_island_option_removed(self, event: SectionMenuIsland.OptionRemoved) -> None:
+        if event.section_name != self._customization_sections_name:
+            self._text_config.setdefault(event.section_name, []).remove(event.value)
+            self.post_message(self.ConfigUpdated(text_config=self._text_config))
+            return

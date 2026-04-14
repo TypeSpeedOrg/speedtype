@@ -20,6 +20,21 @@ class TypingScreen(Screen):
     * User's typing statistics
     * Global rating of other speedtypers
     """
+    DEFAULT_CSS = """
+    TypingScreen {
+        background: #1a1d36;
+        layout: grid;
+        grid-size: 1;
+        grid-rows: 27% 30 auto;
+    
+        .bottom {
+            layout: horizontal;
+            width: 100%;
+            align: center top;
+            padding: 1 0 0 0;
+        }
+    }
+    """
 
     CSS_PATH = "speedtype.tcss"
 
@@ -30,3 +45,8 @@ class TypingScreen(Screen):
             yield ReloadText()
             yield NavigationSection()
             yield TextConfiguration()
+
+    def on_text_configuration_config_updated(self, event: TextConfiguration.ConfigUpdated) -> None:
+        typing_area = self.query_one(TypingArea)
+        typing_area.text_config = event.text_config
+        typing_area.mutate_reactive(TypingArea.text_config)

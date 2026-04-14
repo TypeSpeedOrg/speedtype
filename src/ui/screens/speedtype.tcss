@@ -1,34 +1,6 @@
-.text_area {
-    height: 100%;
-    width: 100%;
-    padding: 0 8;
-    align: center middle;
-    height: 100%;
-}
-
-.multiline {
-    text-align: justify;
-    width: 100%;
-    height: auto;
-    text-wrap: wrap;
-    text-overflow: fold;
-}
-
-TypingScreen {
-    background: #1a1d36;
-    layout: grid;
-    grid-size: 1;
-
-    .bottom {
-        layout: horizontal;
-        width: 100%;
-        align: center top;
-        padding: 1 0 0 0;
-    }
-}
-
 /* ==== Modifiers ==== */
 
 .selected {
     color: #ffd43b;
+    text-style: bold;
 }

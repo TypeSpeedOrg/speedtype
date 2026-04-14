@@ -80,6 +80,7 @@ class SectionMenuIsland(BaseWidget):
                 value=option.value,
             )
 
+            # TODO: refactor, looks awful
             if self._is_vertical:
                 button.styles.width = max_width + 6
 
@@ -114,6 +115,14 @@ class SectionMenuIsland(BaseWidget):
                     selected_button.remove_class(CSSClass.SELECTED)
 
         elif not self._multiple_options and option not in self._selected_options:
+            if self._selected_options:
+                self.post_message(
+                    self.OptionRemoved(
+                        value=self._selected_options[0],
+                        section_name=self._name,
+                    )
+                )
+
             self._selected_options = [option]
             self.post_message(
                 self.OptionSelected(
