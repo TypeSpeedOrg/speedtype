@@ -1,6 +1,7 @@
 from typing import NamedTuple
 
 from rich.repr import Result
+from textual import on
 from textual.app import ComposeResult
 from textual.events import Mount
 from textual.message import Message
@@ -45,8 +46,16 @@ class SectionMenuIsland(BaseWidget):
             yield "value", self.value
             yield "section_name", self.section_name
 
-    class OptionRemoved(OptionSelected):
-        pass
+    class OptionRemoved(Message):
+
+        def __init__(self, value: str, section_name: str) -> None:
+            self.value = value
+            self.section_name = section_name
+            super().__init__()
+
+        def __rich_repr__(self) -> Result:
+            yield "value", self.value
+            yield "section_name", self.section_name
 
     def __init__(
         self,
@@ -86,7 +95,8 @@ class SectionMenuIsland(BaseWidget):
 
             yield button
 
-    def on_menu_island_button_pressed(self, event: MenuIslandButton.Pressed) -> None:
+    @on(MenuIslandButton.Pressed)
+    def button_pressed(self, event: MenuIslandButton.Pressed) -> None:
         if not self._persistent:
             return
 

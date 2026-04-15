@@ -7,7 +7,7 @@ from textual.message import Message
 from textual.widgets import Label
 
 from ui.constants.classes import CSSClass
-from ui.constants.colors import HOVER_COLOR, MENU_ISLAND_BACKGROUD, MENU_ISLAND_COLOR
+from ui.constants.colors import FOCUS_COLOR, MENU_COLOR, REGULAR_COLOR
 from ui.widgets.base import BaseWidget
 
 
@@ -25,11 +25,11 @@ class MenuIsland(BaseWidget):
 class MenuIslandText(BaseWidget):
     DEFAULT_CSS = f"""
     MenuIslandText {{
-        color: {MENU_ISLAND_COLOR};
+        color: {REGULAR_COLOR};
         height: auto;
         width: auto;
         padding: 1 3;
-        background: {MENU_ISLAND_BACKGROUD};
+        background: {MENU_COLOR};
     }}
     """
 
@@ -47,8 +47,8 @@ class MenuIslandText(BaseWidget):
 class MenuIslandButton(BaseWidget):
     DEFAULT_CSS = f"""
     MenuIslandButton {{
-        background: {MENU_ISLAND_BACKGROUD};
-        color: {MENU_ISLAND_COLOR};
+        background: {MENU_COLOR};
+        color: {REGULAR_COLOR};
         height: auto;
         width: auto;
         padding: 1 3;
@@ -56,7 +56,7 @@ class MenuIslandButton(BaseWidget):
         &.{CSSClass.HOVER} {{
             text-style: underline;
             background: #161730;
-            color: {HOVER_COLOR};
+            color: {FOCUS_COLOR};
         }}
     }}
     """

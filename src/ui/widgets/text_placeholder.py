@@ -3,6 +3,8 @@ import asyncio
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Container
+from textual.events import Key
+from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import Label
 
@@ -17,7 +19,6 @@ class TextPlaceholder(BaseWidget, can_focus=True):
             width: 100%;
 
             Label {
-                text-align: justify;
                 width: 100%;
                 height: auto;
                 text-wrap: wrap;
@@ -29,6 +30,14 @@ class TextPlaceholder(BaseWidget, can_focus=True):
     """
     text: reactive[str] = reactive("")
 
+    class KeyPressed(Message):
+
+        def __init__(self, name: str, char: str, is_printable: bool) -> None:
+            self.name = name
+            self.char = char
+            self.is_printable = is_printable
+            super().__init__()
+
     def compose(self) -> ComposeResult:
         with Container(classes="placeholder"):
             yield Label("")
@@ -38,6 +47,18 @@ class TextPlaceholder(BaseWidget, can_focus=True):
 
     def on_focus(self) -> None:
         self._waiting_to_input_animation()
+
+    def on_blur(self):
+        self._waiting_to_input_animation().cancel()
+
+    def on_key(self, event: Key) -> None:
+        self.post_message(
+            self.KeyPressed(
+                name=event.name,
+                char=event.character,
+                is_printable=event.is_printable,
+            )
+        )
 
     @work(name="waiting_to_input_animation", exclusive=True)
     async def _waiting_to_input_animation(self) -> None:

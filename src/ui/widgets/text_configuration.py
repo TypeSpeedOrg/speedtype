@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 from rich.repr import Result
+from textual import on
 from textual.app import ComposeResult
 from textual.message import Message
 
@@ -167,7 +168,8 @@ class TextConfiguration(MenuIsland):
         for section in self._text_config_sections.values():
             yield section
 
-    def on_section_menu_island_option_selected(self, event: SectionMenuIsland.OptionSelected) -> None:
+    @on(SectionMenuIsland.OptionSelected)
+    def option_selected(self, event: SectionMenuIsland.OptionSelected) -> None:
         if event.section_name != self._customization_sections_name:
             self._text_config.setdefault(event.section_name, []).append(event.value)
             self.post_message(self.ConfigUpdated(text_config=self._text_config))
@@ -182,7 +184,8 @@ class TextConfiguration(MenuIsland):
             else:
                 section.hide()
 
-    def on_section_menu_island_option_removed(self, event: SectionMenuIsland.OptionRemoved) -> None:
+    @on(SectionMenuIsland.OptionRemoved)
+    def option_removed(self, event: SectionMenuIsland.OptionRemoved) -> None:
         if event.section_name != self._customization_sections_name:
             self._text_config.setdefault(event.section_name, []).remove(event.value)
             self.post_message(self.ConfigUpdated(text_config=self._text_config))
