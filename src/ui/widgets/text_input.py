@@ -1,7 +1,9 @@
+import asyncio
 from contextlib import suppress
 from enum import StrEnum, auto
 from typing import NamedTuple
 
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.css.query import NoMatches
@@ -10,6 +12,10 @@ from textual.reactive import reactive
 from textual.widgets import Label
 
 from ui.widgets.base import BaseWidget
+
+
+TEXT_LINE_CONTAINER_CLS = "text_line_container"
+PLACEHOLDER_CONTAINER_ID = "placeholder_container"
 
 
 class TextMark(StrEnum):
@@ -29,32 +35,39 @@ class TextLine(NamedTuple):
 class TextInput(BaseWidget, can_focus=True):
     DEFAULT_CSS = F"""
     TextInput {{
-        width: auto;
-        height: auto;
+        width: 100%;
+        height: 100%;
+        
+        #{PLACEHOLDER_CONTAINER_ID} {{
+            height: 100%;
+            width: 100%;
 
-        .text_field {{
+            Label {{
+                width: 100%;
+                height: auto;
+                text-wrap: wrap;
+                text-overflow: fold;
+                opacity: 100%;
+            }}
+        }}
+
+        .{TEXT_LINE_CONTAINER_CLS} {{
+            layout: horizontal;
             width: auto;
             height: auto;
-            layout: vertical;
 
-            .text_line {{
-                layout: horizontal;
+            Label {{
                 width: auto;
                 height: auto;
-
-                Label {{
-                    width: auto;
-                    height: auto;
-                    
-                    &.{TextMark.INVALID} {{
-                        color: #f56788;
-                        background: #9c1131 20%;
-                    }}
-                    
-                    &.{TextMark.CORRECT} {{
-                        color: #86e39d;
-                        background: #119c34 20%;
-                    }}
+                
+                &.{TextMark.INVALID} {{
+                    color: #f56788;
+                    background: #9c1131 20%;
+                }}
+                
+                &.{TextMark.CORRECT} {{
+                    color: #86e39d;
+                    background: #119c34 20%;
                 }}
             }}
         }}
@@ -70,17 +83,17 @@ class TextInput(BaseWidget, can_focus=True):
         self._current_line_idx = 0
         self._current_char_idx = 0
 
-        self._text_field = Container(classes="text_field")
-
     def compose(self) -> ComposeResult:
-        yield self._text_field
+        yield Container(id=PLACEHOLDER_CONTAINER_ID)
+
+    def on_focus(self) -> None:
+        self._waiting_to_input_animation()
 
     def on_key(self, event: Key):
         self.process_typed_char(name=event.name, char=event.character, is_printable=event.is_printable)
 
     def watch_text(self) -> None:
         self._text_lines = []
-
         current_line_length = 0
         line_words = []
 
@@ -102,6 +115,9 @@ class TextInput(BaseWidget, can_focus=True):
                 current_line_length = 0
 
         self.styles.layers = " ".join(f"line_{i}" for i in range(len(self._text_lines)))
+        placeholder_container = self.get_widget_by_id(PLACEHOLDER_CONTAINER_ID, Container)
+        for text_line in self._text_lines:
+            placeholder_container.mount(Label(text_line.text))
 
     def process_typed_char(self, name: str, char: str, is_printable: bool) -> None:
         match name, char, is_printable:
@@ -137,11 +153,11 @@ class TextInput(BaseWidget, can_focus=True):
             self._add_new_text_line_container()
 
     def _add_new_text_line_container(self) -> Container:
-        text_line = Container(classes="text_line")
-        text_line.styles.layer = f"layer_{self._current_line_idx}"
-        text_line.styles.margin = (self._current_line_idx, 0, 0, 0)
-        self._text_field.mount(text_line, after=-1)
-        return text_line
+        text_line_container = Container(classes=TEXT_LINE_CONTAINER_CLS)
+        text_line_container.styles.layer = f"layer_{self._current_line_idx}"
+        text_line_container.styles.margin = (self._current_line_idx, 0, 0, 0)
+        self.mount(text_line_container, after=-1)
+        return text_line_container
 
     @property
     def _current_char(self) -> str:
@@ -154,6 +170,27 @@ class TextInput(BaseWidget, can_focus=True):
     @property
     def _current_text_line_container(self) -> Container:
         try:
-            return self._text_field.query(Container).last()
+            return self.query(Container).filter(f".{TEXT_LINE_CONTAINER_CLS}").last()
         except NoMatches:
             return self._add_new_text_line_container()
+
+    ##############################################################
+    ###################### ANIMATIONS | UI #######################
+    ##############################################################
+
+    @work(name="waiting_to_input_animation", exclusive=True)
+    async def _waiting_to_input_animation(self) -> None:
+        duration = 0.8
+
+        async def animate_input(value: float, easing: str) -> None:
+            self.get_widget_by_id(PLACEHOLDER_CONTAINER_ID, Container).styles.animate(
+                "opacity",
+                value=value,
+                duration=duration,
+                easing=easing,
+            )
+            await asyncio.sleep(duration)
+
+        while True:
+            await animate_input(0.5, "in_out_quad")
+            await animate_input(1, "in_out_quad")

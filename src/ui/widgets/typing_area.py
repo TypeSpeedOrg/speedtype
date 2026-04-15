@@ -1,19 +1,52 @@
-import random
-import string
-
-from textual import on, work
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.reactive import reactive
 
-from ui.constants.colors import FOCUS_COLOR, MENU_COLOR, REGULAR_COLOR, SELECTED_COLOR
+from ui.constants.colors import MENU_COLOR, REGULAR_COLOR, SELECTED_COLOR
 from ui.widgets.base import BaseWidget
 from ui.widgets.text_configuration import TextConfig, TextConfiguration
 from ui.widgets.text_input import TextInput
-from ui.widgets.text_placeholder import TextPlaceholder
 
 
 LINE_WIDTH = 160
+TEXT_MOCK = """
+alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi 
+omega apple banana cherry date elderberry fig grape honeydew kiwi lemon mango nectarine orange papaya quince 
+raspberry strawberry tangerine ugli watermelon apricot blackberry blueberry cantaloupe cranberry dragonfruit guava 
+jackfruit kumquat lime lychee mandarin mulberry passionfruit peach pear persimmon pineapple plum pomegranate 
+starfruit avocado broccoli cabbage carrot cauliflower celery cucumber eggplant garlic ginger kale lettuce mushroom 
+onion pepper potato pumpkin radish spinach squash tomato turnip zucchini almond cashew hazelnut peanut pecan 
+pistachio walnut bread butter cheese cream milk yogurt coffee tea water juice soda syrup sugar salt pepper basil 
+oregano thyme parsley rosemary dill cilantro mint vanilla cinnamon nutmeg clove gingerbread pancake waffle cereal 
+oatmeal rice pasta noodle pizza burger sandwich soup salad steak chicken turkey beef pork fish shrimp crab lobster 
+oyster salmon tuna cod sardine anchovy trout eagle falcon hawk sparrow pigeon crow raven owl parrot penguin flamingo 
+swan goose duck rooster hen lion tiger leopard cheetah panther jaguar elephant giraffe zebra rhinoceros hippopotamus 
+bear wolf fox coyote dog cat horse donkey camel goat sheep cow bull deer moose rabbit squirrel hamster guinea pig 
+mouse rat otter beaver dolphin whale shark octopus squid jellyfish coral algae moss fern tree flower grass bush vine 
+leaf root stem branch bark seed soil sand rock stone mountain valley river ocean lake pond island forest jungle 
+desert tundra glacier volcano canyon cliff hill plain plateau sky cloud rain snow hail storm wind breeze thunder 
+lightning rainbow sunrise sunset dawn dusk night day morning evening noon midnight spring summer autumn winter 
+january february march april may june july august september october november december monday tuesday wednesday 
+thursday friday saturday sunday time space matter energy force motion gravity friction velocity acceleration mass 
+weight density pressure temperature heat light sound color shape size length width height depth volume area circle 
+square triangle rectangle polygon sphere cube cylinder cone pyramid line point angle curve equation number digit 
+fraction decimal percent ratio algebra geometry calculus logic data code program function variable constant array 
+list stack queue graph tree network system process thread memory storage disk file folder path input output error 
+debug compile run build deploy test validate design model pattern structure architecture interface protocol package 
+module library framework engine kernel server client browser request response header body token session cookie cache 
+index query table row column key value hash map set filter sort search find replace insert update delete create drop 
+join merge split connect disconnect upload download sync async parallel sequential random ordered stable unstable 
+fast slow secure unsafe public private local global static dynamic simple complex basic advanced modern classic 
+digital analog virtual physical real abstract concrete linear nonlinear discrete continuous finite infinite open 
+closed start stop begin end first last next previous early late new old young ancient future past present current 
+temporary permanent optional required valid invalid true false yes no high low big small short long wide narrow thick 
+thin strong weak heavy light hard soft rough smooth bright dark clear blurry sharp dull noisy quiet calm active 
+passive happy sad angry joyful peaceful curious serious careful bold brave timid clever wise kind gentle honest loyal 
+fair equal free bound common rare unique normal strange simple tricky easy difficult possible impossible certain 
+uncertain known unknown visible hidden complete partial full empty ready busy safe risky clean dirty fresh stale rich 
+poor stronghold framework foundation baseline guide
+"""
 
 
 class TypingArea(BaseWidget):
@@ -44,15 +77,6 @@ class TypingArea(BaseWidget):
             .text {{
                 width: {LINE_WIDTH};
                 height: 100%;
-                layers: placeholder input;
-
-                TextPlaceholder {{
-                    layer: placeholder;
-                }}
-
-                TextInput {{
-                    layer: input;
-                }}
             }}
         }}
     }}
@@ -63,7 +87,6 @@ class TypingArea(BaseWidget):
     def compose(self) -> ComposeResult:
         with Container(classes="wrapper"):
             with Container(classes="text"):
-                yield TextPlaceholder().data_bind(TypingArea.text)
                 yield TextInput(line_length=LINE_WIDTH).data_bind(TypingArea.text)
 
     def watch_text_config(self) -> None:
@@ -82,28 +105,10 @@ class TypingArea(BaseWidget):
     def on_mount(self) -> None:
         self._update_input_text()
 
-    @on(TextPlaceholder.KeyPressed)
-    def text_placeholder_key_pressed(self, event: TextPlaceholder.KeyPressed) -> None:
-        placeholder = self.query_one(TextPlaceholder)
-        text_input = self.query_one(TextInput)
-
-        placeholder.blur()
-
-        text_input.focus()
-        text_input.styles.color = FOCUS_COLOR
-        text_input.process_typed_char(
-            name=event.name,
-            char=event.char,
-            is_printable=event.is_printable,
-        )
-
     @staticmethod
     async def _load_input_text() -> str:
         # TODO: Mocking, in the future must do request to zeus
-        return " ".join(
-            "".join(random.choice(string.ascii_lowercase) for _ in range(random.randint(5, 10)))
-            for _ in range(1000)
-        )
+        return " ".join(TEXT_MOCK.split())
 
     @work(name="update_input_text", exclusive=True)
     async def _update_input_text(self) -> None:
