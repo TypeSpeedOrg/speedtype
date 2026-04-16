@@ -31,7 +31,7 @@ class TypingScreen(Screen):
     
         .top {
             min-height: 0;
-            max-height: 20;
+            max-height: 12;
         }
 
         .middle {

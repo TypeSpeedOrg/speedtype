@@ -57,7 +57,6 @@ class TypingArea(BaseWidget):
     DEFAULT_CSS = f"""
     TypingArea {{
         width: 100%;
-        padding: 0 16;
         height: 100%;
         color: {REGULAR_COLOR};
         align: center middle;
@@ -98,17 +97,21 @@ class TypingArea(BaseWidget):
                 yield TextInput(line_length=LINE_WIDTH).data_bind(TypingArea.text, TypingArea.is_typing)
 
     def watch_text_config(self) -> None:
-        config_string = []
+        config_values = []
         selected_time = ""
 
         for config_name, values in self.text_config.items():
             if config_name == TextConfiguration.Configuration.TIME:
                 selected_time = values[0]
             else:
-                config_string.extend(values)
+                config_values.extend(values)
+
+        config_string = f" {", ".join(config_values)} "
 
         self._update_timer(selected_time)
-        self.query_one(Container).border_subtitle = f" {", ".join(config_string)} "
+        if self.query_one(Container).border_subtitle != config_string:
+            self.query_one(Container).border_subtitle = f" {", ".join(config_values)} "
+            self._regenerate_text()
 
     def watch_is_typing(self, is_typing: bool | None) -> None:
         if is_typing:
@@ -117,11 +120,11 @@ class TypingArea(BaseWidget):
         elif is_typing is False:
             self._start_timer().cancel()
             self._update_timer(self.text_config[TextConfiguration.Configuration.TIME][0])
-            self._update_input_text()
+            self._regenerate_text()
             self.post_message(self.TypingStopped())
 
     def on_mount(self) -> None:
-        self._update_input_text()
+        self._regenerate_text()
 
     @on(TextInput.TypingStarted)
     def typing_started(self) -> None:
@@ -138,7 +141,7 @@ class TypingArea(BaseWidget):
         return " ".join(words)
 
     @work(exclusive=True)
-    async def _update_input_text(self) -> None:
+    async def _regenerate_text(self) -> None:
         self.text = await self._load_input_text()
 
     @work(exclusive=True)

@@ -250,10 +250,6 @@ class TextInput(BaseWidget, can_focus=True):
         except NoMatches:
             return self._move_to_new_line()
 
-    ##############################################################
-    ###################### ANIMATIONS | UI #######################
-    ##############################################################
-
     @work(exclusive=True)
     async def _waiting_to_input_animation(self) -> None:
         duration = 0.8
