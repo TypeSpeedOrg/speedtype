@@ -3,7 +3,6 @@ from typing import NamedTuple
 from rich.repr import Result
 from textual import on
 from textual.app import ComposeResult
-from textual.events import Mount
 from textual.message import Message
 
 from ui.constants.classes import CSSClass
@@ -147,7 +146,7 @@ class SectionMenuIsland(BaseWidget):
 
         event.stop()
 
-    def on_mount(self, event: Mount) -> None:
+    def on_mount(self) -> None:
         for option in self._selected_options:
             self.post_message(
                 self.OptionSelected(

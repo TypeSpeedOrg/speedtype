@@ -2,7 +2,6 @@ import asyncio
 
 from rich.repr import Result
 from textual.app import ComposeResult
-from textual.events import Click, Enter, Leave
 from textual.message import Message
 from textual.widgets import Label
 
@@ -39,9 +38,6 @@ class MenuIslandText(BaseWidget):
 
     def compose(self) -> ComposeResult:
         yield Label(self._label)
-
-    def on_click(self, event: Click) -> None:
-        event.stop()
 
 
 class MenuIslandButton(BaseWidget):
@@ -86,20 +82,19 @@ class MenuIslandButton(BaseWidget):
     def compose(self) -> ComposeResult:
         yield Label(self._label)
 
-    def on_enter(self, event: Enter) -> None:
+    def on_enter(self) -> None:
         self.add_class(CSSClass.HOVER)
 
-    def on_leave(self, event: Leave) -> None:
+    def on_leave(self) -> None:
         self.remove_class(CSSClass.HOVER)
 
-    async def on_click(self, event: Click) -> None:
+    async def on_click(self) -> None:
         self.add_class(CSSClass.SELECTED)
 
         if not self._persist_click:
             await asyncio.sleep(0.1)
             self.remove_class(CSSClass.SELECTED)
 
-        event.stop()
         self.post_message(self.Pressed(value=self._value))
 
     @property

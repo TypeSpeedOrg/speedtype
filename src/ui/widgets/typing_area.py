@@ -1,6 +1,10 @@
-from textual import work
+import asyncio
+import random
+
+from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Container
+from textual.message import Message
 from textual.reactive import reactive
 
 from ui.constants.colors import MENU_COLOR, REGULAR_COLOR, SELECTED_COLOR
@@ -9,7 +13,7 @@ from ui.widgets.text_configuration import TextConfig, TextConfiguration
 from ui.widgets.text_input import TextInput
 
 
-LINE_WIDTH = 160
+LINE_WIDTH = 140
 TEXT_MOCK = """
 alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi 
 omega apple banana cherry date elderberry fig grape honeydew kiwi lemon mango nectarine orange papaya quince 
@@ -83,33 +87,67 @@ class TypingArea(BaseWidget):
     """
     text_config: reactive[TextConfig] = reactive(dict)
     text: reactive[str] = reactive("")
+    is_typing: reactive[bool | None] = reactive(None)
+
+    class TypingStopped(Message):
+        pass
 
     def compose(self) -> ComposeResult:
         with Container(classes="wrapper"):
             with Container(classes="text"):
-                yield TextInput(line_length=LINE_WIDTH).data_bind(TypingArea.text)
+                yield TextInput(line_length=LINE_WIDTH).data_bind(TypingArea.text, TypingArea.is_typing)
 
     def watch_text_config(self) -> None:
         config_string = []
-        select_time = ""
+        selected_time = ""
+
         for config_name, values in self.text_config.items():
             if config_name == TextConfiguration.Configuration.TIME:
-                select_time = f"{values[0]} SEC"
+                selected_time = values[0]
             else:
                 config_string.extend(values)
 
-        container = self.query_one(Container)
-        container.border_title = f" {select_time} "
-        container.border_subtitle = f" {", ".join(config_string)} "
+        self._update_timer(selected_time)
+        self.query_one(Container).border_subtitle = f" {", ".join(config_string)} "
+
+    def watch_is_typing(self, is_typing: bool | None) -> None:
+        if is_typing:
+            self._start_timer()
+
+        elif is_typing is False:
+            self._start_timer().cancel()
+            self._update_timer(self.text_config[TextConfiguration.Configuration.TIME][0])
+            self._update_input_text()
+            self.post_message(self.TypingStopped())
 
     def on_mount(self) -> None:
         self._update_input_text()
 
+    @on(TextInput.TypingStarted)
+    def typing_started(self) -> None:
+        self.is_typing = True
+
+    def _update_timer(self, seconds: str | int):
+        self.query_one(Container).border_title = f" {seconds} SEC "
+
     @staticmethod
     async def _load_input_text() -> str:
         # TODO: Mocking, in the future must do request to zeus
-        return " ".join(TEXT_MOCK.split())
+        words = TEXT_MOCK.split()
+        random.shuffle(words)
+        return " ".join(words)
 
-    @work(name="update_input_text", exclusive=True)
+    @work(exclusive=True)
     async def _update_input_text(self) -> None:
         self.text = await self._load_input_text()
+
+    @work(exclusive=True)
+    async def _start_timer(self) -> None:
+        remaining_seconds = int(self.text_config[TextConfiguration.Configuration.TIME][0])
+
+        while remaining_seconds >= 0:
+            self._update_timer(remaining_seconds)
+            await asyncio.sleep(1)
+            remaining_seconds -= 1
+
+        self.is_typing = False
