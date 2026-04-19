@@ -15,3 +15,11 @@ init:
 format:
     ruff format
     ruff check --fix
+
+# Run speedtype in dev mode
+run-dev:
+    textual run --dev src/speedtype/main.py
+
+# Installs speedtype globally
+install:
+    uv tool install --python 3.14 .

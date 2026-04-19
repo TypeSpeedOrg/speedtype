@@ -7,9 +7,17 @@ Main features of *Speedtype*:
 
 And all of this is running inside your terminal!
 
-## Setup
+## Install
 
---
+Install `speedtype` with:
+```
+curl -fsSL raw.githubusercontent.com/TypeSpeedOrg/speedtype/refs/heads/main/install.sh | sh
+```
+
+After installation, run:
+```
+speedtype
+```
 
 ## Development
 This section is intended only for developing the *Speedtype*. If you only want to install the application, go to the [Setup](#Setup) section.
