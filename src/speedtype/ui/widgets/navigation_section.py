@@ -2,8 +2,8 @@ from enum import StrEnum
 
 from textual.app import ComposeResult
 
-from ui.widgets.menu_island import MenuIsland
-from ui.widgets.section_menu_island import SectionMenuIsland, SectionOption
+from speedtype.ui.widgets.menu_island import MenuIsland
+from speedtype.ui.widgets.section_menu_island import SectionMenuIsland, SectionOption
 
 
 class NavigationSection(MenuIsland):

@@ -7,14 +7,14 @@ from textual.containers import Container
 from textual.message import Message
 from textual.reactive import reactive
 
-from ui.constants.colors import (
+from speedtype.ui.constants.colors import (
     MENU_BACKGROUND_COLOR,
     REGULAR_TEXT_COLOR,
     SELECTED_TEXT_COLOR,
 )
-from ui.widgets.base import BaseWidget
-from ui.widgets.text_configuration import TextConfig, TextConfiguration
-from ui.widgets.text_input import TextInput
+from speedtype.ui.widgets.base import BaseWidget
+from speedtype.ui.widgets.text_configuration import TextConfig, TextConfiguration
+from speedtype.ui.widgets.text_input import TextInput
 
 
 LINE_WIDTH = 140

@@ -12,14 +12,14 @@ from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import Label
 
-from ui.constants.classes import CSSClass
-from ui.constants.colors import (
+from speedtype.ui.constants.classes import CSSClass
+from speedtype.ui.constants.colors import (
     CORRECT_TEXT_BACKGROUND,
     CORRECT_TEXT_COLOR,
     INVALID_TEXT_BACKGROUND,
     INVALID_TEXT_COLOR,
 )
-from ui.widgets.base import BaseWidget
+from speedtype.ui.widgets.base import BaseWidget
 
 
 TEXT_LINE_CONTAINER_CLS = "text_line_container"
