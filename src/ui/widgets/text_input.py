@@ -13,7 +13,12 @@ from textual.reactive import reactive
 from textual.widgets import Label
 
 from ui.constants.classes import CSSClass
-from ui.constants.colors import CORRECT_TEXT_BACKGROUND, CORRECT_TEXT_COLOR, INVALID_TEXT_BACKGROUND, INVALID_TEXT_COLOR
+from ui.constants.colors import (
+    CORRECT_TEXT_BACKGROUND,
+    CORRECT_TEXT_COLOR,
+    INVALID_TEXT_BACKGROUND,
+    INVALID_TEXT_COLOR,
+)
 from ui.widgets.base import BaseWidget
 
 
@@ -42,13 +47,13 @@ class TextInput(BaseWidget, can_focus=True):
         width: 100%;
         height: 100%;
         layout: horizontal;
-    
+
         #{LINE_ARROW_ID} {{
             width: auto;
             height: auto;
             padding: 0 1 0 0;
         }}
-        
+
         #{PLACEHOLDER_CONTAINER_ID} {{
             height: 100%;
             width: 100%;
@@ -71,12 +76,12 @@ class TextInput(BaseWidget, can_focus=True):
             Label {{
                 width: auto;
                 height: auto;
-                
+
                 &.{TextMark.INVALID} {{
                     color: {INVALID_TEXT_COLOR};
                     background: {INVALID_TEXT_BACKGROUND} 20%;
                 }}
-                
+
                 &.{TextMark.CORRECT} {{
                     color: {CORRECT_TEXT_COLOR};
                     background: {CORRECT_TEXT_BACKGROUND} 20%;
@@ -91,7 +96,12 @@ class TextInput(BaseWidget, can_focus=True):
     class TypingStarted(Message):
         pass
 
-    def __init__(self, *args, line_length: int, **kwargs) -> None:
+    def __init__(
+        self,
+        *args,
+        line_length: int,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self._line_length_limit = line_length
@@ -105,12 +115,19 @@ class TextInput(BaseWidget, can_focus=True):
         yield Label(">", id=LINE_ARROW_ID, classes=CSSClass.SELECTED)
         yield Container(id=PLACEHOLDER_CONTAINER_ID)
 
-    def on_key(self, event: Key):
+    def on_key(
+        self,
+        event: Key,
+    ) -> None:
         if not self.is_typing:
             self.post_message(self.TypingStarted())
 
         self.is_typing = True
-        self.process_typed_char(name=event.name, char=event.character, is_printable=event.is_printable)
+        self.process_typed_char(
+            name=event.name,
+            char=event.character,
+            is_printable=event.is_printable,
+        )
 
     def on_focus(self) -> None:
         self._waiting_to_input_animation()
@@ -139,13 +156,16 @@ class TextInput(BaseWidget, can_focus=True):
                     TextLine(
                         words=tuple(line_words),
                         length=current_line_length,
-                    )
+                    ),
                 )
                 line_words = []
                 current_line_length = 0
 
         self.styles.layers = " ".join(f"line_{i}" for i in range(len(self._text_lines)))
-        placeholder_container = self.get_widget_by_id(PLACEHOLDER_CONTAINER_ID, Container)
+        placeholder_container = self.get_widget_by_id(
+            PLACEHOLDER_CONTAINER_ID,
+            Container,
+        )
 
         for placeholder_label in placeholder_container.query(Label):
             placeholder_label.remove()
@@ -153,7 +173,12 @@ class TextInput(BaseWidget, can_focus=True):
         for text_line in self._text_lines:
             placeholder_container.mount(Label(text_line.text))
 
-    def process_typed_char(self, name: str, char: str, is_printable: bool) -> None:
+    def process_typed_char(
+        self,
+        name: str,
+        char: str,
+        is_printable: bool,
+    ) -> None:
         match name, char, is_printable:
             case "backspace", _, _:
                 self._remove_char()
@@ -197,13 +222,21 @@ class TextInput(BaseWidget, can_focus=True):
 
         self._inc_current_char_idx()
 
-    def _add_char(self, character: str) -> None:
+    def _add_char(
+        self,
+        character: str,
+    ) -> None:
         is_char_valid = character == self._current_char
-        text_label = self._get_text_label(mark=TextMark.CORRECT if is_char_valid else TextMark.INVALID)
+        text_label = self._get_text_label(
+            mark=TextMark.CORRECT if is_char_valid else TextMark.INVALID,
+        )
         text_label.content += character
         self._inc_current_char_idx()
 
-    def _get_text_label(self, mark: TextMark) -> Label:
+    def _get_text_label(
+        self,
+        mark: TextMark,
+    ) -> Label:
         last_label = self._get_last_label()
 
         if last_label and last_label.has_class(mark):
@@ -235,7 +268,10 @@ class TextInput(BaseWidget, can_focus=True):
         self._move_arrow_to_line(self._current_line_idx)
         return text_line_container
 
-    def _move_arrow_to_line(self, line_idx: int) -> None:
+    def _move_arrow_to_line(
+        self,
+        line_idx: int,
+    ) -> None:
         self.get_widget_by_id(LINE_ARROW_ID, Label).styles.padding = (line_idx, 1, 0, 0)
 
     @property

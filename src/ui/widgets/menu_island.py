@@ -6,7 +6,11 @@ from textual.message import Message
 from textual.widgets import Label
 
 from ui.constants.classes import CSSClass
-from ui.constants.colors import FOCUS_TEXT_COLOR, MENU_BACKGROUND_COLOR, REGULAR_TEXT_COLOR
+from ui.constants.colors import (
+    FOCUS_TEXT_COLOR,
+    MENU_BACKGROUND_COLOR,
+    REGULAR_TEXT_COLOR,
+)
 from ui.widgets.base import BaseWidget
 
 
@@ -32,7 +36,12 @@ class MenuIslandText(BaseWidget):
     }}
     """
 
-    def __init__(self, *args, label: str, **kwargs):
+    def __init__(
+        self,
+        *args,
+        label: str,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._label = label
 
@@ -48,7 +57,7 @@ class MenuIslandButton(BaseWidget):
         height: auto;
         width: auto;
         padding: 1 3;
-        
+
         &.hover {{
             text-style: underline;
             background: #161730;
@@ -58,8 +67,10 @@ class MenuIslandButton(BaseWidget):
     """
 
     class Pressed(Message):
-
-        def __init__(self, value: str) -> None:
+        def __init__(
+            self,
+            value: str,
+        ) -> None:
             self.value = value
             super().__init__()
 
@@ -73,7 +84,7 @@ class MenuIslandButton(BaseWidget):
         value: str | None,
         persist_click: bool,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._label = label
         self._value = value

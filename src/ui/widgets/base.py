@@ -2,9 +2,8 @@ from textual.widget import Widget
 
 
 class BaseWidget(Widget):
+    def hide(self) -> None:
+        self.styles.display = "none"
 
-    def hide(self):
-        self.styles.display = 'none'
-
-    def show(self):
-        self.styles.display = 'block'
+    def show(self) -> None:
+        self.styles.display = "block"

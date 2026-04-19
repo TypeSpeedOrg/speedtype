@@ -17,7 +17,7 @@ class TypingScreen(Screen):
         background: #1a1d36;
         layout: vertical;
         overflow: hidden auto;
-    
+
         .top {
             min-height: 0;
             max-height: 12;
@@ -77,7 +77,10 @@ class TypingScreen(Screen):
         self.query_one(TextConfiguration).show()
 
     @on(TextConfiguration.ConfigUpdated)
-    def text_configuration_updated(self, event: TextConfiguration.ConfigUpdated) -> None:
+    def text_configuration_updated(
+        self,
+        event: TextConfiguration.ConfigUpdated,
+    ) -> None:
         typing_area = self.query_one(TypingArea)
         typing_area.text_config = event.text_config
         typing_area.mutate_reactive(TypingArea.text_config)

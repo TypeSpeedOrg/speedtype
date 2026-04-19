@@ -6,7 +6,6 @@ from ui.widgets.menu_island import MenuIsland, MenuIslandButton
 
 
 class StopTypeButton(MenuIsland):
-
     class Stopped(Message):
         pass
 
