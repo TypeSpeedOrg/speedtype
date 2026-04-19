@@ -7,7 +7,6 @@ from ui.widgets.section_menu_island import SectionMenuIsland, SectionOption
 
 
 class NavigationSection(MenuIsland):
-
     class Section(StrEnum):
         PROFILE = "PROFILE"
         STATS = "STATS"

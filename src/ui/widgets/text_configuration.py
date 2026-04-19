@@ -8,7 +8,9 @@ from textual.message import Message
 from ui.constants.classes import CSSClass
 from ui.widgets.menu_island import MenuIsland, MenuIslandText
 from ui.widgets.section_menu_island import (
-    MultipleSectionMenuIsland, SectionConfiguration, SectionMenuIsland,
+    MultipleSectionMenuIsland,
+    SectionConfiguration,
+    SectionMenuIsland,
     SectionOption,
 )
 
@@ -17,7 +19,6 @@ type TextConfig = dict[TextConfiguration.Configuration, list[str]]
 
 
 class TextConfiguration(MenuIsland):
-
     class Configuration(StrEnum):
         TIME = "TIME"
         LANGUAGE = "LANGUAGE"
@@ -44,15 +45,21 @@ class TextConfiguration(MenuIsland):
         SPECIAL_CHARACTERS = "SPECIAL CHARACTERS"
 
     class ConfigUpdated(Message):
-
-        def __init__(self, text_config: TextConfig) -> None:
+        def __init__(
+            self,
+            text_config: TextConfig,
+        ) -> None:
             self.text_config = text_config
             super().__init__()
 
         def __rich_repr__(self) -> Result:
             yield "text_config", self.text_config
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(
+        self,
+        *args,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self._text_config_sections = {
@@ -134,12 +141,12 @@ class TextConfiguration(MenuIsland):
                         name="additional_symbols",
                         is_multiple_options=True,
                     ),
-                )
+                ),
             ),
         }
         self._text_config: TextConfig = {}
 
-        self._customization_sections_name = 'config_menu'
+        self._customization_sections_name = "config_menu"
         self._customization_sections = SectionMenuIsland(
             options=(
                 SectionOption(
@@ -169,7 +176,10 @@ class TextConfiguration(MenuIsland):
             yield section
 
     @on(SectionMenuIsland.OptionSelected)
-    def option_selected(self, event: SectionMenuIsland.OptionSelected) -> None:
+    def option_selected(
+        self,
+        event: SectionMenuIsland.OptionSelected,
+    ) -> None:
         if event.section_name != self._customization_sections_name:
             self._text_config.setdefault(event.section_name, []).append(event.value)
             self.post_message(self.ConfigUpdated(text_config=self._text_config))
@@ -185,7 +195,10 @@ class TextConfiguration(MenuIsland):
                 section.hide()
 
     @on(SectionMenuIsland.OptionRemoved)
-    def option_removed(self, event: SectionMenuIsland.OptionRemoved) -> None:
+    def option_removed(
+        self,
+        event: SectionMenuIsland.OptionRemoved,
+    ) -> None:
         if event.section_name != self._customization_sections_name:
             self._text_config.setdefault(event.section_name, []).remove(event.value)
             self.post_message(self.ConfigUpdated(text_config=self._text_config))

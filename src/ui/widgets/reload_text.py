@@ -6,7 +6,6 @@ from ui.widgets.menu_island import MenuIsland, MenuIslandButton
 
 
 class ReloadTextButton(MenuIsland):
-
     class Pressed(Message):
         pass
 

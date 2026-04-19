@@ -35,8 +35,11 @@ class SectionMenuIsland(BaseWidget):
     """
 
     class OptionSelected(Message):
-
-        def __init__(self, value: str, section_name: str) -> None:
+        def __init__(
+            self,
+            value: str,
+            section_name: str,
+        ) -> None:
             self.value = value
             self.section_name = section_name
             super().__init__()
@@ -46,8 +49,11 @@ class SectionMenuIsland(BaseWidget):
             yield "section_name", self.section_name
 
     class OptionRemoved(Message):
-
-        def __init__(self, value: str, section_name: str) -> None:
+        def __init__(
+            self,
+            value: str,
+            section_name: str,
+        ) -> None:
             self.value = value
             self.section_name = section_name
             super().__init__()
@@ -73,12 +79,12 @@ class SectionMenuIsland(BaseWidget):
         self._name = name
         self._is_vertical = is_vertical
         self._multiple_options = is_multiple_options
-        self.styles.layout = 'vertical' if is_vertical else 'horizontal'
+        self.styles.layout = "vertical" if is_vertical else "horizontal"
 
-        self._selected_options = [option.value for option in self._options if CSSClass.SELECTED == option.css_class]
+        self._selected_options = [option.value for option in self._options if option.css_class == CSSClass.SELECTED]
 
     def compose(self) -> ComposeResult:
-        max_width = max(map(lambda opt: len(opt.label), self._options))
+        max_width = max((len(opt.label) for opt in self._options))
 
         for option in self._options:
             button = MenuIslandButton(
@@ -95,7 +101,10 @@ class SectionMenuIsland(BaseWidget):
             yield button
 
     @on(MenuIslandButton.Pressed)
-    def button_pressed(self, event: MenuIslandButton.Pressed) -> None:
+    def button_pressed(
+        self,
+        event: MenuIslandButton.Pressed,
+    ) -> None:
         if not self._persistent:
             return
 
@@ -107,7 +116,7 @@ class SectionMenuIsland(BaseWidget):
                 self.OptionSelected(
                     value=option,
                     section_name=self._name,
-                )
+                ),
             )
 
         elif self._multiple_options and option in self._selected_options:
@@ -116,10 +125,12 @@ class SectionMenuIsland(BaseWidget):
                 self.OptionRemoved(
                     value=option,
                     section_name=self._name,
-                )
+                ),
             )
 
-            for selected_button in self.query_children(MenuIslandButton).filter(f".{CSSClass.SELECTED}"):
+            for selected_button in self.query_children(MenuIslandButton).filter(
+                f".{CSSClass.SELECTED}",
+            ):
                 if selected_button.value == option:
                     selected_button.remove_class(CSSClass.SELECTED)
 
@@ -129,7 +140,7 @@ class SectionMenuIsland(BaseWidget):
                     self.OptionRemoved(
                         value=self._selected_options[0],
                         section_name=self._name,
-                    )
+                    ),
                 )
 
             self._selected_options = [option]
@@ -137,10 +148,12 @@ class SectionMenuIsland(BaseWidget):
                 self.OptionSelected(
                     value=option,
                     section_name=self._name,
-                )
+                ),
             )
 
-            for selected_button in self.query_children(MenuIslandButton).filter(f".{CSSClass.SELECTED}"):
+            for selected_button in self.query_children(MenuIslandButton).filter(
+                f".{CSSClass.SELECTED}",
+            ):
                 if selected_button.value != option:
                     selected_button.remove_class(CSSClass.SELECTED)
 
@@ -152,7 +165,7 @@ class SectionMenuIsland(BaseWidget):
                 self.OptionSelected(
                     value=option,
                     section_name=self._name,
-                )
+                ),
             )
 
 
