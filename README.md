@@ -42,4 +42,5 @@ This section is intended only for developing the *Speedtype*. If you only want t
   - *Issues* - link to the issue which will be resolved after PR is merged.
   - *Attachments* (optional) - contains the additional attachments: photo, videos, etc.
 - Apply only the ***squash and merge*** strategy when merging changes into the `main` branch.
+  - Add PR description into the merge request's `Extended description`.
 - After the PR is merged, delete the original branch.
