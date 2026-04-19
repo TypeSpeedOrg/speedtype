@@ -5,9 +5,9 @@ from textual import on
 from textual.app import ComposeResult
 from textual.message import Message
 
-from ui.constants.classes import CSSClass
-from ui.widgets.base import BaseWidget
-from ui.widgets.menu_island import MenuIslandButton
+from speedtype.ui.constants.classes import CSSClass
+from speedtype.ui.widgets.base import BaseWidget
+from speedtype.ui.widgets.menu_island import MenuIslandButton
 
 
 type SectionOptions = tuple[SectionOption, ...]

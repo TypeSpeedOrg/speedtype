@@ -3,12 +3,12 @@ from textual.app import ComposeResult
 from textual.containers import Container
 from textual.screen import Screen
 
-from ui.widgets.navigation_section import NavigationSection
-from ui.widgets.reload_text import ReloadTextButton
-from ui.widgets.stop_button import StopTypeButton
-from ui.widgets.text_configuration import TextConfiguration
-from ui.widgets.text_input import TextInput
-from ui.widgets.typing_area import TypingArea
+from speedtype.ui.widgets.navigation_section import NavigationSection
+from speedtype.ui.widgets.reload_text import ReloadTextButton
+from speedtype.ui.widgets.stop_button import StopTypeButton
+from speedtype.ui.widgets.text_configuration import TextConfiguration
+from speedtype.ui.widgets.text_input import TextInput
+from speedtype.ui.widgets.typing_area import TypingArea
 
 
 class TypingScreen(Screen):

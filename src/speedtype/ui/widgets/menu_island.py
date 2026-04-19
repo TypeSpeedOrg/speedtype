@@ -5,13 +5,13 @@ from textual.app import ComposeResult
 from textual.message import Message
 from textual.widgets import Label
 
-from ui.constants.classes import CSSClass
-from ui.constants.colors import (
+from speedtype.ui.constants.classes import CSSClass
+from speedtype.ui.constants.colors import (
     FOCUS_TEXT_COLOR,
     MENU_BACKGROUND_COLOR,
     REGULAR_TEXT_COLOR,
 )
-from ui.widgets.base import BaseWidget
+from speedtype.ui.widgets.base import BaseWidget
 
 
 class MenuIsland(BaseWidget):
