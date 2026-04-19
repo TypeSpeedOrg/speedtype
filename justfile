@@ -12,7 +12,7 @@ init:
       uv sync && \
       pre-commit install
     echo "Project initialized. Dependencies, pre-commit hooks successfully installed."
-gi
+
 # Check the project files and fixes them if it is possible.
 format:
     ruff format
