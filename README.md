@@ -29,15 +29,15 @@ This section is intended only for developing the *Speedtype*. If you only want t
 1. Checkout from the `main` a new branch with the following name `<feature/bugfix/task>/<short description>`.
    1. How to choose what to specify: *feature*, *bugfix* or *task*:
       - *feature* - adds a new functionality to the end users - it is what they will see when *Speedtype* is launched.
-      - *bugfix* - fixing the bug that occurs in the *Speedtype*
+      - *bugfix* - fixing the bug that occurs in the *Speedtype*.
       - *task* - anything else: updating *README*, adding new tests, configuring linters, etc.
 2. Do some changes...
-3. Push the branch to the `origin`
-4. Create PR
+3. Push the branch to the `origin`.
+4. Create PR.
 
 #### Pull requests
 - Merge request's title must follow the next structure `<feature/bugfix/task>: <short description>`.
-- Merge request's body must contain the following sections
+- Merge request's body must contain the following sections.
   - *What was done* - description of what was changed/added/removed.
   - *Issues* - link to the issue which will be resolved after PR is merged.
   - *Attachments* (optional) - contains the additional attachments: photo, videos, etc.
