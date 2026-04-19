@@ -27,10 +27,10 @@ This section is intended only for developing the *Speedtype*. If you only want t
 
 #### Developing
 1. Checkout from the `main` a new branch with the following name `<feature/bugfix/task>/<short description>`.
-  - How to choose what to specify: *feature*, *bugfix* or *task*:
-    - *feature* - adds a new functionality to the end users - it is what they will see when *Speedtype* is launched.
-    - *bugfix* - fixing the bug that occurs in the *Speedtype*
-    - *task* - anything else: updating *README*, adding new tests, configuring linters, etc.
+   2. How to choose what to specify: *feature*, *bugfix* or *task*:
+      - *feature* - adds a new functionality to the end users - it is what they will see when *Speedtype* is launched.
+      - *bugfix* - fixing the bug that occurs in the *Speedtype*
+      - *task* - anything else: updating *README*, adding new tests, configuring linters, etc.
 2. Do some changes...
 3. Push the branch to the `origin`
 4. Create PR
