@@ -6,7 +6,7 @@ from textual.message import Message
 from textual.widgets import Label
 
 from ui.constants.classes import CSSClass
-from ui.constants.colors import FOCUS_COLOR, MENU_COLOR, REGULAR_COLOR
+from ui.constants.colors import FOCUS_TEXT_COLOR, MENU_BACKGROUND_COLOR, REGULAR_TEXT_COLOR
 from ui.widgets.base import BaseWidget
 
 
@@ -24,11 +24,11 @@ class MenuIsland(BaseWidget):
 class MenuIslandText(BaseWidget):
     DEFAULT_CSS = f"""
     MenuIslandText {{
-        color: {REGULAR_COLOR};
+        color: {REGULAR_TEXT_COLOR};
         height: auto;
         width: auto;
         padding: 1 3;
-        background: {MENU_COLOR};
+        background: {MENU_BACKGROUND_COLOR};
     }}
     """
 
@@ -43,16 +43,16 @@ class MenuIslandText(BaseWidget):
 class MenuIslandButton(BaseWidget):
     DEFAULT_CSS = f"""
     MenuIslandButton {{
-        background: {MENU_COLOR};
-        color: {REGULAR_COLOR};
+        background: {MENU_BACKGROUND_COLOR};
+        color: {REGULAR_TEXT_COLOR};
         height: auto;
         width: auto;
         padding: 1 3;
         
-        &.{CSSClass.HOVER} {{
+        &.hover {{
             text-style: underline;
             background: #161730;
-            color: {FOCUS_COLOR};
+            color: {FOCUS_TEXT_COLOR};
         }}
     }}
     """
@@ -83,10 +83,10 @@ class MenuIslandButton(BaseWidget):
         yield Label(self._label)
 
     def on_enter(self) -> None:
-        self.add_class(CSSClass.HOVER)
+        self.add_class("hover")
 
     def on_leave(self) -> None:
-        self.remove_class(CSSClass.HOVER)
+        self.remove_class("hover")
 
     async def on_click(self) -> None:
         self.add_class(CSSClass.SELECTED)

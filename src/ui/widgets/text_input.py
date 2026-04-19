@@ -13,6 +13,7 @@ from textual.reactive import reactive
 from textual.widgets import Label
 
 from ui.constants.classes import CSSClass
+from ui.constants.colors import CORRECT_TEXT_BACKGROUND, CORRECT_TEXT_COLOR, INVALID_TEXT_BACKGROUND, INVALID_TEXT_COLOR
 from ui.widgets.base import BaseWidget
 
 
@@ -72,13 +73,13 @@ class TextInput(BaseWidget, can_focus=True):
                 height: auto;
                 
                 &.{TextMark.INVALID} {{
-                    color: #f56788;
-                    background: #9c1131 20%;
+                    color: {INVALID_TEXT_COLOR};
+                    background: {INVALID_TEXT_BACKGROUND} 20%;
                 }}
                 
                 &.{TextMark.CORRECT} {{
-                    color: #86e39d;
-                    background: #119c34 20%;
+                    color: {CORRECT_TEXT_COLOR};
+                    background: {CORRECT_TEXT_BACKGROUND} 20%;
                 }}
             }}
         }}
@@ -129,7 +130,7 @@ class TextInput(BaseWidget, can_focus=True):
         for word in self.text.split():
             word_length = len(word) + 1
 
-            if current_line_length + word_length <= self._line_length_limit:
+            if current_line_length + word_length < self._line_length_limit:
                 line_words.extend((word, " "))
                 current_line_length += word_length
 
@@ -213,10 +214,8 @@ class TextInput(BaseWidget, can_focus=True):
         return label
 
     def _get_last_label(self) -> Label | None:
-        text_line = self._current_text_line_container
-
         with suppress(NoMatches):
-            return text_line.query(Label).last()
+            return self._current_text_line_container.query(Label).last()
 
         return None
 

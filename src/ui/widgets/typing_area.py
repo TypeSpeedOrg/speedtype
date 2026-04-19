@@ -7,7 +7,7 @@ from textual.containers import Container
 from textual.message import Message
 from textual.reactive import reactive
 
-from ui.constants.colors import MENU_COLOR, REGULAR_COLOR, SELECTED_COLOR
+from ui.constants.colors import MENU_BACKGROUND_COLOR, REGULAR_TEXT_COLOR, SELECTED_TEXT_COLOR
 from ui.widgets.base import BaseWidget
 from ui.widgets.text_configuration import TextConfig, TextConfiguration
 from ui.widgets.text_input import TextInput
@@ -58,7 +58,7 @@ class TypingArea(BaseWidget):
     TypingArea {{
         width: 100%;
         height: 100%;
-        color: {REGULAR_COLOR};
+        color: {REGULAR_TEXT_COLOR};
         align: center middle;
 
         .wrapper {{
@@ -66,16 +66,16 @@ class TypingArea(BaseWidget):
             width: auto;
             padding: 1 0;
 
-            border: hkey {MENU_COLOR};
+            border: hkey {MENU_BACKGROUND_COLOR};
             border-title-align: left;
-            border-title-color: {SELECTED_COLOR};
+            border-title-color: {SELECTED_TEXT_COLOR};
             border-title-style: bold;
-            border-title-background: {MENU_COLOR};
+            border-title-background: {MENU_BACKGROUND_COLOR};
             
             border-subtitle-align: right;
-            border-subtitle-color: {SELECTED_COLOR};
+            border-subtitle-color: {SELECTED_TEXT_COLOR};
             border-subtitle-style: bold;
-            border-subtitle-background: {MENU_COLOR};
+            border-subtitle-background: {MENU_BACKGROUND_COLOR};
 
             .text {{
                 width: {LINE_WIDTH};
@@ -92,9 +92,11 @@ class TypingArea(BaseWidget):
         pass
 
     def compose(self) -> ComposeResult:
-        with Container(classes="wrapper"):
-            with Container(classes="text"):
-                yield TextInput(line_length=LINE_WIDTH).data_bind(TypingArea.text, TypingArea.is_typing)
+        with (
+            Container(classes="wrapper"),
+            Container(classes="text"),
+        ):
+            yield TextInput(line_length=LINE_WIDTH).data_bind(TypingArea.text, TypingArea.is_typing)
 
     def watch_text_config(self) -> None:
         config_values = []
