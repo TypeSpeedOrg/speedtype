@@ -4,8 +4,6 @@ help:
 
 # Initialize a project. Installs dependencies and pre-commit hooks.
 init:
-    #!/usr/bin/env bash
-
     uv python install 3.14
     uv venv --python 3.14
     source .venv/bin/activate && \
