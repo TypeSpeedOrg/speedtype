@@ -111,7 +111,7 @@ class TypingArea(BaseWidget):
         self._update_timer(selected_time)
         if self.query_one(Container).border_subtitle != config_string:
             self.query_one(Container).border_subtitle = f" {", ".join(config_values)} "
-            self._regenerate_text()
+            self.regenerate_text()
 
     def watch_is_typing(self, is_typing: bool | None) -> None:
         if is_typing:
@@ -120,11 +120,12 @@ class TypingArea(BaseWidget):
         elif is_typing is False:
             self._start_timer().cancel()
             self._update_timer(self.text_config[TextConfiguration.Configuration.TIME][0])
-            self._regenerate_text()
+            self.regenerate_text()
             self.post_message(self.TypingStopped())
+            self.query_one(TextInput).blur()
 
     def on_mount(self) -> None:
-        self._regenerate_text()
+        self.regenerate_text()
 
     @on(TextInput.TypingStarted)
     def typing_started(self) -> None:
@@ -141,7 +142,7 @@ class TypingArea(BaseWidget):
         return " ".join(words)
 
     @work(exclusive=True)
-    async def _regenerate_text(self) -> None:
+    async def regenerate_text(self) -> None:
         self.text = await self._load_input_text()
 
     @work(exclusive=True)

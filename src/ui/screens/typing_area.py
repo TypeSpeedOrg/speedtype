@@ -12,17 +12,6 @@ from ui.widgets.typing_area import TypingArea
 
 
 class TypingScreen(Screen):
-    """
-    Initial screen that user sees when launch the speedtype.
-
-    It contains input area where the person can start typing.
-    Also, it has configurations to customize the text for the
-    typing, and also additional buttons to open corresponding
-    screens:
-    * Profile
-    * User's typing statistics
-    * Global rating of other speedtypers
-    """
     DEFAULT_CSS = """
     TypingScreen {
         background: #1a1d36;
@@ -65,6 +54,14 @@ class TypingScreen(Screen):
     def on_mount(self) -> None:
         self.query_one(StopTypeButton).hide()
 
+    @on(ReloadTextButton.Pressed)
+    def reload_button_pressed(self) -> None:
+        self.query_one(TypingArea).regenerate_text()
+
+    @on(StopTypeButton.Stopped)
+    def stop_button_pressed(self) -> None:
+        self.query_one(TypingArea).is_typing = False
+
     @on(TextInput.TypingStarted)
     def typing_started(self) -> None:
         self.query_one(ReloadTextButton).hide()
@@ -78,10 +75,6 @@ class TypingScreen(Screen):
         self.query_one(ReloadTextButton).show()
         self.query_one(NavigationSection).show()
         self.query_one(TextConfiguration).show()
-
-    @on(StopTypeButton.Stopped)
-    def stop_button_pressed(self) -> None:
-        self.query_one(TypingArea).is_typing = False
 
     @on(TextConfiguration.ConfigUpdated)
     def text_configuration_updated(self, event: TextConfiguration.ConfigUpdated) -> None:

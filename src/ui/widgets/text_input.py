@@ -36,7 +36,7 @@ class TextLine(NamedTuple):
 
 
 class TextInput(BaseWidget, can_focus=True):
-    DEFAULT_CSS = F"""
+    DEFAULT_CSS = f"""
     TextInput {{
         width: 100%;
         height: 100%;
@@ -105,9 +105,14 @@ class TextInput(BaseWidget, can_focus=True):
         yield Container(id=PLACEHOLDER_CONTAINER_ID)
 
     def on_key(self, event: Key):
-        self.post_message(self.TypingStarted())
+        if not self.is_typing:
+            self.post_message(self.TypingStarted())
+
         self.is_typing = True
         self.process_typed_char(name=event.name, char=event.character, is_printable=event.is_printable)
+
+    def on_focus(self) -> None:
+        self._waiting_to_input_animation()
 
     def watch_is_typing(self, is_typing_started: bool) -> None:
         if is_typing_started:
@@ -115,7 +120,6 @@ class TextInput(BaseWidget, can_focus=True):
 
         else:
             self._reset()
-            self._waiting_to_input_animation()
 
     def watch_text(self) -> None:
         self._text_lines = []
