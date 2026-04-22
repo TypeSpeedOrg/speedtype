@@ -14,9 +14,9 @@ from textual.widgets import Label
 
 from speedtype.ui.constants.classes import CSSClass
 from speedtype.ui.constants.colors import (
-    CORRECT_TEXT_BACKGROUND,
+    CORRECT_TEXT_BG,
     CORRECT_TEXT_COLOR,
-    INVALID_TEXT_BACKGROUND,
+    INVALID_TEXT_BG,
     INVALID_TEXT_COLOR,
 )
 from speedtype.ui.widgets.base import BaseWidget
@@ -79,12 +79,12 @@ class TextInput(BaseWidget, can_focus=True):
 
                 &.{TextMark.INVALID} {{
                     color: {INVALID_TEXT_COLOR};
-                    background: {INVALID_TEXT_BACKGROUND} 20%;
+                    background: {INVALID_TEXT_BG} 20%;
                 }}
 
                 &.{TextMark.CORRECT} {{
                     color: {CORRECT_TEXT_COLOR};
-                    background: {CORRECT_TEXT_BACKGROUND} 20%;
+                    background: {CORRECT_TEXT_BG} 20%;
                 }}
             }}
         }}

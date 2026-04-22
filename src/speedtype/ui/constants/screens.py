@@ -1,5 +1,6 @@
 from enum import StrEnum, auto
 
 
-class Screen(StrEnum):
+class AppScreen(StrEnum):
     TYPING_SCREEN = auto()
+    TYPING_SESSION_STATS = auto()

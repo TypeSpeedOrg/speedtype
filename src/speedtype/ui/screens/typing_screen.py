@@ -1,8 +1,8 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container
-from textual.screen import Screen
 
+from speedtype.ui.screens.base import BaseScreen
 from speedtype.ui.widgets.navigation_section import NavigationSection
 from speedtype.ui.widgets.reload_text import ReloadTextButton
 from speedtype.ui.widgets.stop_button import StopTypeButton
@@ -11,7 +11,7 @@ from speedtype.ui.widgets.text_input import TextInput
 from speedtype.ui.widgets.typing_area import TypingArea
 
 
-class TypingScreen(Screen):
+class TypingScreen(BaseScreen):
     DEFAULT_CSS = """
     TypingScreen {
         background: #1a1d36;
@@ -36,8 +36,6 @@ class TypingScreen(Screen):
         }
     }
     """
-
-    CSS_PATH = "speedtype.tcss"
 
     def compose(self) -> ComposeResult:
         yield Container(classes="top")

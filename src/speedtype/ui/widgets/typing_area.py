@@ -8,8 +8,8 @@ from textual.message import Message
 from textual.reactive import reactive
 
 from speedtype.ui.constants.colors import (
-    MENU_BACKGROUND_COLOR,
-    REGULAR_TEXT_COLOR,
+    BLOCK_BG_COLOR,
+    BLOCK_COLOR,
     SELECTED_TEXT_COLOR,
 )
 from speedtype.ui.widgets.base import BaseWidget
@@ -62,7 +62,7 @@ class TypingArea(BaseWidget):
     TypingArea {{
         width: 100%;
         height: 100%;
-        color: {REGULAR_TEXT_COLOR};
+        color: {BLOCK_COLOR};
         align: center middle;
 
         .wrapper {{
@@ -70,16 +70,16 @@ class TypingArea(BaseWidget):
             width: auto;
             padding: 1 0;
 
-            border: hkey {MENU_BACKGROUND_COLOR};
+            border: hkey {BLOCK_BG_COLOR};
             border-title-align: left;
             border-title-color: {SELECTED_TEXT_COLOR};
             border-title-style: bold;
-            border-title-background: {MENU_BACKGROUND_COLOR};
+            border-title-background: {BLOCK_BG_COLOR};
 
             border-subtitle-align: right;
             border-subtitle-color: {SELECTED_TEXT_COLOR};
             border-subtitle-style: bold;
-            border-subtitle-background: {MENU_BACKGROUND_COLOR};
+            border-subtitle-background: {BLOCK_BG_COLOR};
 
             .text {{
                 width: {LINE_WIDTH};
