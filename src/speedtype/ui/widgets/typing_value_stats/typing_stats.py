@@ -8,7 +8,6 @@ class TypingValueStats(BaseWidget):
     DEFAULT_CSS = """
     TypingValueStats {
         layout: grid;
-        padding: 1 1 0 0;
         grid-gutter: 1 0;
         grid-size: 1;
     }
@@ -16,5 +15,5 @@ class TypingValueStats(BaseWidget):
 
     def compose(self) -> ComposeResult:
         yield StatsSection(label="WPM")
-        yield StatsSection(label="CORRECTLY SYMBOLS")
+        yield StatsSection(label="CORRECT SYMBOLS")
         yield StatsSection(label="INVALID SYMBOLS")

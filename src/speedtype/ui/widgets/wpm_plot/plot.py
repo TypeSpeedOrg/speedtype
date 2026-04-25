@@ -21,7 +21,7 @@ class WPMPlot(BaseWidget):
         background: {BLOCK_BG};
         color: {BLOCK_COLOR};
         layout: vertical;
-        padding: 1 4 1 2;
+        padding: 1 5 1 2;
 
         .title {{
             text-align: center;

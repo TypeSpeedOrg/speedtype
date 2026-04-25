@@ -5,7 +5,7 @@ from textual.containers import Container
 from speedtype.ui.constants.colors import APP_BG
 from speedtype.ui.screens.base import BaseScreen
 from speedtype.ui.widgets.close_button import CloseButton
-from speedtype.ui.widgets.invalid_chars_plot import InvalidCharsPlot
+from speedtype.ui.widgets.invalid_chars_stats.invalid_symbols import InvalidCharsStats
 from speedtype.ui.widgets.typing_value_stats.typing_stats import TypingValueStats
 from speedtype.ui.widgets.wpm_plot.plot import WPMPlot
 
@@ -33,8 +33,9 @@ class TypingSessionStats(BaseScreen):
                 grid-size: 2;
                 grid-columns: 30% 70%;
                 grid-rows: 13 12;
+                grid-gutter: 1 2;
 
-                .wpm {{
+                WPMPlot {{
                     column-span: 2;
                 }}
             }}
@@ -57,9 +58,9 @@ class TypingSessionStats(BaseScreen):
             Container(classes="middle"),
             Container(classes="stats"),
         ):
-            yield WPMPlot(classes="wpm")
+            yield WPMPlot()
             yield TypingValueStats()
-            yield InvalidCharsPlot(classes="invalid_chars")
+            yield InvalidCharsStats()
 
         with Container(classes="bottom"):
             yield CloseButton()

@@ -10,6 +10,7 @@ class WPMAxis(BaseWidget):
     DEFAULT_CSS = """
     WPMAxis {
         padding: 0 3 0 0;
+
         .wpm-speed-axis {
             layout: grid;
             grid-size: 1 3;

@@ -9,6 +9,7 @@ class TimeAxis(BaseWidget):
     DEFAULT_CSS = """
     TimeAxis {
         padding: 1 0 0 0;
+
         .wpm-time {
             layout: grid;
             grid-size: 6;
