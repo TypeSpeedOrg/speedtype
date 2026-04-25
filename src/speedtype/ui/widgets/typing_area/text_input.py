@@ -11,6 +11,7 @@ from textual.events import Key
 from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import Label
+from textual.worker import Worker
 
 from speedtype.ui.constants.classes import CSSClass
 from speedtype.ui.constants.colors import (
@@ -106,6 +107,7 @@ class TextInput(BaseWidget, can_focus=True):
 
         self._line_length_limit = line_length
         self._text_lines: list[TextLine] = []
+        self._waiting_animation: Worker[None] | None = None
 
         self._current_line_idx = 0
         self._current_char_idx = 0
@@ -120,23 +122,26 @@ class TextInput(BaseWidget, can_focus=True):
         event: Key,
     ) -> None:
         if not self.is_typing:
+            self.is_typing = True
             self.post_message(self.TypingStarted())
 
-        self.is_typing = True
         self.process_typed_char(
             name=event.name,
             char=event.character,
             is_printable=event.is_printable,
         )
 
-    def on_focus(self) -> None:
-        self._waiting_to_input_animation()
-
     def watch_is_typing(self, is_typing_started: bool) -> None:
         if is_typing_started:
-            self._waiting_to_input_animation().cancel()
+            self._waiting_animation.cancel()
+            self._animate_input(
+                value=1,
+                easing="in_out_quad",
+                duration=0.8,
+            )
 
         else:
+            self._waiting_animation = self._waiting_to_input_animation()
             self._reset()
 
     def watch_text(self) -> None:
@@ -191,7 +196,7 @@ class TextInput(BaseWidget, can_focus=True):
         self._current_line_idx = 0
         self._current_char_idx = 0
         self._current_word_idx = 0
-        self._move_arrow_to_line(0)
+        self._move_arrow_to_line(line_idx=0)
 
         for text_line in self.query(Container).filter(f".{TEXT_LINE_CONTAINER_CLS}"):
             text_line.remove()
@@ -265,7 +270,7 @@ class TextInput(BaseWidget, can_focus=True):
         text_line_container.styles.layer = f"layer_{self._current_line_idx}"
         text_line_container.styles.margin = (self._current_line_idx, 0, 0, 2)
         self.mount(text_line_container, after=-1)
-        self._move_arrow_to_line(self._current_line_idx)
+        self._move_arrow_to_line(line_idx=self._current_line_idx)
         return text_line_container
 
     def _move_arrow_to_line(
@@ -273,6 +278,14 @@ class TextInput(BaseWidget, can_focus=True):
         line_idx: int,
     ) -> None:
         self.get_widget_by_id(LINE_ARROW_ID, Label).styles.padding = (line_idx, 1, 0, 0)
+
+    def _animate_input(self, value: float, easing: str, duration: float) -> None:
+        self.get_widget_by_id(PLACEHOLDER_CONTAINER_ID, Container).styles.animate(
+            "opacity",
+            value=value,
+            duration=duration,
+            easing=easing,
+        )
 
     @property
     def _current_char(self) -> str:
@@ -293,15 +306,16 @@ class TextInput(BaseWidget, can_focus=True):
     async def _waiting_to_input_animation(self) -> None:
         duration = 0.8
 
-        async def animate_input(value: float, easing: str) -> None:
-            self.get_widget_by_id(PLACEHOLDER_CONTAINER_ID, Container).styles.animate(
-                "opacity",
-                value=value,
+        while True:
+            self._animate_input(
+                value=0.5,
+                easing="in_out_quad",
                 duration=duration,
-                easing=easing,
             )
             await asyncio.sleep(duration)
-
-        while True:
-            await animate_input(0.5, "in_out_quad")
-            await animate_input(1, "in_out_quad")
+            self._animate_input(
+                value=1,
+                easing="in_out_quad",
+                duration=duration,
+            )
+            await asyncio.sleep(duration)

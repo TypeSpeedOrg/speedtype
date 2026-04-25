@@ -2,39 +2,41 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container
 
+from speedtype.ui.constants.colors import APP_BG
+from speedtype.ui.constants.screens import AppScreen
 from speedtype.ui.screens.base import BaseScreen
 from speedtype.ui.widgets.navigation_section import NavigationSection
 from speedtype.ui.widgets.reload_text import ReloadTextButton
 from speedtype.ui.widgets.stop_button import StopTypeButton
 from speedtype.ui.widgets.text_configuration import TextConfiguration
-from speedtype.ui.widgets.text_input import TextInput
-from speedtype.ui.widgets.typing_area import TypingArea
+from speedtype.ui.widgets.typing_area.area import TypingArea
+from speedtype.ui.widgets.typing_area.text_input import TextInput
 
 
 class TypingScreen(BaseScreen):
-    DEFAULT_CSS = """
-    TypingScreen {
-        background: #1a1d36;
+    DEFAULT_CSS = f"""
+    TypingScreen {{
+        background: {APP_BG};
         layout: vertical;
         overflow: hidden auto;
 
-        .top {
+        .top {{
             min-height: 0;
             max-height: 12;
-        }
+        }}
 
-        .middle {
+        .middle {{
             height: 25;
-        }
+        }}
 
-        .bottom {
+        .bottom {{
             min-height: 7;
             layout: horizontal;
             width: 100%;
             align: center top;
             padding: 1 0 0 0;
-        }
-    }
+        }}
+    }}
     """
 
     def compose(self) -> ComposeResult:
@@ -82,3 +84,7 @@ class TypingScreen(BaseScreen):
         typing_area = self.query_one(TypingArea)
         typing_area.text_config = event.text_config
         typing_area.mutate_reactive(TypingArea.text_config)
+
+    @on(TypingArea.TypingFinished)
+    def typing_finished(self) -> None:
+        self.app.push_screen(AppScreen.TYPING_SESSION_STATS)

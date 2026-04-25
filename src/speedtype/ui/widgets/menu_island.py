@@ -12,7 +12,7 @@ from speedtype.ui.constants.colors import (
     ABORT_BLOCK_COLOR,
     ABORT_HOVER_BG,
     ABORT_HOVER_COLOR,
-    BLOCK_BG_COLOR,
+    BLOCK_BG,
     BLOCK_COLOR,
     BLOCK_HOVER_BG,
     BLOCK_HOVER_COLOR,
@@ -43,7 +43,7 @@ class MenuIslandText(BaseWidget):
         height: auto;
         width: auto;
         padding: 1 3;
-        background: {BLOCK_BG_COLOR};
+        background: {BLOCK_BG};
     }}
     """
 
@@ -68,7 +68,7 @@ class MenuIslandButton(BaseWidget):
         padding: 1 3;
 
         &.{ButtonStyle.REGULAR} {{
-            background: {BLOCK_BG_COLOR};
+            background: {BLOCK_BG};
             color: {BLOCK_COLOR};
         }}
 
@@ -117,7 +117,7 @@ class MenuIslandButton(BaseWidget):
         self._persist_click = persist_click
         self._button_style = button_style
 
-        self._apply_style()
+        self.add_class(self._button_style)
 
     def compose(self) -> ComposeResult:
         yield Label(self._label)
@@ -136,9 +136,6 @@ class MenuIslandButton(BaseWidget):
             self.remove_class(CSSClass.SELECTED)
 
         self.post_message(self.Pressed(value=self._value))
-
-    def _apply_style(self) -> None:
-        self.add_class(self._button_style)
 
     @property
     def value(self) -> str:

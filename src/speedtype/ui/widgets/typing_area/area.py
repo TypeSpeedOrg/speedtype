@@ -8,13 +8,13 @@ from textual.message import Message
 from textual.reactive import reactive
 
 from speedtype.ui.constants.colors import (
-    BLOCK_BG_COLOR,
+    BLOCK_BG,
     BLOCK_COLOR,
-    SELECTED_TEXT_COLOR,
+    SELECTED_COLOR,
 )
 from speedtype.ui.widgets.base import BaseWidget
 from speedtype.ui.widgets.text_configuration import TextConfig, TextConfiguration
-from speedtype.ui.widgets.text_input import TextInput
+from speedtype.ui.widgets.typing_area.text_input import TextInput
 
 
 LINE_WIDTH = 140
@@ -70,16 +70,16 @@ class TypingArea(BaseWidget):
             width: auto;
             padding: 1 0;
 
-            border: hkey {BLOCK_BG_COLOR};
+            border: hkey {BLOCK_BG};
             border-title-align: left;
-            border-title-color: {SELECTED_TEXT_COLOR};
+            border-title-color: {SELECTED_COLOR};
             border-title-style: bold;
-            border-title-background: {BLOCK_BG_COLOR};
+            border-title-background: {BLOCK_BG};
 
             border-subtitle-align: right;
-            border-subtitle-color: {SELECTED_TEXT_COLOR};
+            border-subtitle-color: {SELECTED_COLOR};
             border-subtitle-style: bold;
-            border-subtitle-background: {BLOCK_BG_COLOR};
+            border-subtitle-background: {BLOCK_BG};
 
             .text {{
                 width: {LINE_WIDTH};
@@ -93,6 +93,9 @@ class TypingArea(BaseWidget):
     is_typing: reactive[bool | None] = reactive(None)
 
     class TypingStopped(Message):
+        pass
+
+    class TypingFinished(Message):
         pass
 
     def compose(self) -> ComposeResult:
@@ -132,11 +135,10 @@ class TypingArea(BaseWidget):
         elif is_typing is False:
             self._start_timer().cancel()
             self._update_timer(
-                self.text_config[TextConfiguration.Configuration.TIME][0],
+                seconds=self.text_config[TextConfiguration.Configuration.TIME][0],
             )
             self.regenerate_text()
             self.post_message(self.TypingStopped())
-            self.query_one(TextInput).blur()
 
     def on_mount(self) -> None:
         self.regenerate_text()
@@ -173,4 +175,5 @@ class TypingArea(BaseWidget):
             await asyncio.sleep(1)
             remaining_seconds -= 1
 
+        self.post_message(self.TypingFinished())
         self.is_typing = False

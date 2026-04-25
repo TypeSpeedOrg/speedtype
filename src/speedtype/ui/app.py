@@ -1,8 +1,8 @@
 from textual.app import App
 
 from speedtype.ui.constants.screens import AppScreen
+from speedtype.ui.screens.session_stats import TypingSessionStats
 from speedtype.ui.screens.typing_screen import TypingScreen
-from speedtype.ui.screens.typing_session_stats import TypingSessionStats
 
 
 class SpeedType(App):
@@ -13,3 +13,4 @@ class SpeedType(App):
 
     def on_mount(self) -> None:
         self.push_screen(AppScreen.TYPING_SCREEN)
+        self.push_screen(AppScreen.TYPING_SESSION_STATS)

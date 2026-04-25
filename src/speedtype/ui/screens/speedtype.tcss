@@ -4,3 +4,11 @@
     color: #ffd43b;
     text-style: bold;
 }
+
+InvalidCharsPlot {
+    padding: 1 0 0 1;
+
+    Container {
+        background: #101224;
+    }
+}
