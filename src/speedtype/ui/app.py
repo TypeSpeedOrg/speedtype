@@ -13,4 +13,3 @@ class SpeedType(App):
 
     def on_mount(self) -> None:
         self.push_screen(AppScreen.TYPING_SCREEN)
-        self.push_screen(AppScreen.TYPING_SESSION_STATS)

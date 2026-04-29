@@ -1,11 +1,12 @@
 import asyncio
 import random
+from collections.abc import Coroutine
 
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Container
-from textual.message import Message
 from textual.reactive import reactive
+from textual.worker import Worker
 
 from speedtype.ui.constants.colors import (
     BLOCK_BG,
@@ -88,25 +89,20 @@ class TypingArea(BaseWidget):
         }}
     }}
     """
-    text_config: reactive[TextConfig] = reactive(dict)
+    text_config: reactive[TextConfig] = reactive(dict, init=False)
     text: reactive[str] = reactive("")
-    is_typing: reactive[bool | None] = reactive(None)
 
-    class TypingStopped(Message):
-        pass
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
-    class TypingFinished(Message):
-        pass
+        self._timer: Worker[Coroutine[None, None, None]] | None = None
 
     def compose(self) -> ComposeResult:
         with (
             Container(classes="wrapper"),
             Container(classes="text"),
         ):
-            yield TextInput(line_length=LINE_WIDTH).data_bind(
-                TypingArea.text,
-                TypingArea.is_typing,
-            )
+            yield TextInput(line_length=LINE_WIDTH).data_bind(TypingArea.text)
 
     def watch_text_config(self) -> None:
         config_values = []
@@ -120,35 +116,31 @@ class TypingArea(BaseWidget):
 
         config_string = f" {', '.join(config_values)} "
 
-        self._update_timer(selected_time)
+        self.query_one(TextInput).set_input_time(input_time=int(selected_time))
+        self._update_timer(seconds=selected_time)
+
         if self.query_one(Container).border_subtitle != config_string:
             self.query_one(Container).border_subtitle = f" {', '.join(config_values)} "
             self.regenerate_text()
 
-    def watch_is_typing(
-        self,
-        is_typing: bool | None,
-    ) -> None:
-        if is_typing:
-            self._start_timer()
-
-        elif is_typing is False:
-            self._start_timer().cancel()
-            self._update_timer(
-                seconds=self.text_config[TextConfiguration.Configuration.TIME][0],
-            )
-            self.regenerate_text()
-            self.post_message(self.TypingStopped())
-
     def on_mount(self) -> None:
         self.regenerate_text()
 
+    def stop(self) -> None:
+        self.query_one(TextInput).stop()
+        self._timer.cancel()
+        self._update_timer(
+            seconds=self.text_config[TextConfiguration.Configuration.TIME][0],
+        )
+        self.regenerate_text()
+
     @on(TextInput.TypingStarted)
-    def typing_started(self) -> None:
-        self.is_typing = True
+    def _typing_started(self) -> None:
+        self._timer = self._start_timer()
 
     def _update_timer(
         self,
+        *,
         seconds: str | int,
     ) -> None:
         self.query_one(Container).border_title = f" {seconds} SEC "
@@ -170,10 +162,9 @@ class TypingArea(BaseWidget):
             self.text_config[TextConfiguration.Configuration.TIME][0],
         )
 
-        while remaining_seconds >= 0:
-            self._update_timer(remaining_seconds)
+        while remaining_seconds > 0:
             await asyncio.sleep(1)
             remaining_seconds -= 1
+            self._update_timer(seconds=remaining_seconds)
 
-        self.post_message(self.TypingFinished())
-        self.is_typing = False
+        self._update_timer(seconds=self.text_config[TextConfiguration.Configuration.TIME][0])

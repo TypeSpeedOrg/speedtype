@@ -36,7 +36,7 @@ class StatsSection(BaseWidget):
     }}
     """
 
-    value: reactive[str] = reactive("")
+    value: reactive[str] = reactive("", init=False)
 
     def __init__(
         self,
@@ -54,8 +54,4 @@ class StatsSection(BaseWidget):
             yield Label(self._label)
 
     def watch_value(self) -> None:
-        if not self.value:
-            return
-
-        value_label = self.query_one("Container.value", Container).query_one(Label)
-        value_label.update(self.value)
+        self.query_one("Container.value", Container).query_one(Label).update(self.value)

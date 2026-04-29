@@ -60,21 +60,26 @@ class TypingScreen(BaseScreen):
 
     @on(StopTypeButton.Stopped)
     def stop_button_pressed(self) -> None:
-        self.query_one(TypingArea).is_typing = False
-
-    @on(TextInput.TypingStarted)
-    def typing_started(self) -> None:
-        self.query_one(ReloadTextButton).hide()
-        self.query_one(NavigationSection).hide()
-        self.query_one(TextConfiguration).hide()
-        self.query_one(StopTypeButton).show()
-
-    @on(TypingArea.TypingStopped)
-    def typing_stopped(self) -> None:
+        self.query_one(TypingArea).stop()
         self.query_one(StopTypeButton).hide()
         self.query_one(ReloadTextButton).show()
         self.query_one(NavigationSection).show()
         self.query_one(TextConfiguration).show()
+
+    @on(TextInput.TypingStarted)
+    def typing_started(self) -> None:
+        self.query_one(StopTypeButton).show()
+        self.query_one(ReloadTextButton).hide()
+        self.query_one(NavigationSection).hide()
+        self.query_one(TextConfiguration).hide()
+
+    @on(TextInput.TypingFinished)
+    def typing_finished(self, event: TextInput.TypingFinished, ) -> None:
+        self.query_one(StopTypeButton).hide()
+        self.query_one(ReloadTextButton).show()
+        self.query_one(NavigationSection).show()
+        self.query_one(TextConfiguration).show()
+        self.app.push_screen(AppScreen.TYPING_SESSION_STATS)
 
     @on(TextConfiguration.ConfigUpdated)
     def text_configuration_updated(
@@ -84,7 +89,3 @@ class TypingScreen(BaseScreen):
         typing_area = self.query_one(TypingArea)
         typing_area.text_config = event.text_config
         typing_area.mutate_reactive(TypingArea.text_config)
-
-    @on(TypingArea.TypingFinished)
-    def typing_finished(self) -> None:
-        self.app.push_screen(AppScreen.TYPING_SESSION_STATS)
