@@ -3,7 +3,6 @@ from textual.containers import Container
 from textual.reactive import var
 from textual.widgets import Label
 
-from speedtype.ui.types.typing_area import WordStats
 from speedtype.ui.widgets.base import BaseWidget
 
 
@@ -31,18 +30,23 @@ class WPMAxis(BaseWidget):
         }
     }
     """
-    stats: var[list[WordStats]] = var(list, init=False)
-    time_range: var[list[int]] = var(list, init=False)
+    wpm_borders: var[tuple[int, int, int]] = var(None, init=False)
 
     def compose(self) -> ComposeResult:
         with Container(classes="wpm-speed-axis"):
-            with Container(classes="max-wpm"):
-                yield Label("90")
-            with Container(classes="mean-wpm"):
-                yield Label("45")
-            with Container(classes="min-wpm"):
-                yield Label("0")
+            yield Container(classes="max-wpm")
+            yield Container(classes="mean-wpm")
+            yield Container(classes="min-wpm")
 
-    def set_time_range(self, time_range: list[int]) -> None:
-        self.time_range = time_range
-        self.mutate_reactive(WPMAxis.time_range)
+    def watch_wpm_borders(self) -> None:
+        max_wpm_container = self.query_one("Container.max-wpm", Container)
+        mean_wpm_container = self.query_one("Container.mean-wpm", Container)
+        min_wpm_container = self.query_one("Container.min-wpm", Container)
+
+        max_wpm_container.remove_children()
+        mean_wpm_container.remove_children()
+        min_wpm_container.remove_children()
+
+        max_wpm_container.mount(Label(str(self.wpm_borders[2])))
+        mean_wpm_container.mount(Label(str(self.wpm_borders[1])))
+        min_wpm_container.mount(Label(str(self.wpm_borders[0])))

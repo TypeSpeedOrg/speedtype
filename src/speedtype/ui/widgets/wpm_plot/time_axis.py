@@ -1,5 +1,6 @@
 from textual.app import ComposeResult
 from textual.containers import Container
+from textual.reactive import var
 from textual.widgets import Label
 
 from speedtype.ui.widgets.base import BaseWidget
@@ -12,9 +13,9 @@ class TimeAxis(BaseWidget):
 
         .wpm-time {
             layout: grid;
-            grid-size: 6;
+            grid-size: 5;
 
-            .last-time-cell {
+            .last-time-step {
                 layout: grid;
                 grid-size: 2;
 
@@ -26,19 +27,24 @@ class TimeAxis(BaseWidget):
         }
     }
     """
+    input_time: var[int] = var(None, init=False)
 
     def compose(self) -> ComposeResult:
-        with Container(classes="wpm-time"):
-            with Container():
-                yield Label("0")
-            with Container():
-                yield Label("5")
-            with Container():
-                yield Label("10")
-            with Container():
-                yield Label("15")
-            with Container():
-                yield Label("20")
-            with Container(classes="last-time-cell"):
-                yield Label("25")
-                yield Label("30", classes="end-time-value")
+        yield Container(classes="wpm-time")
+
+    def watch_input_time(self) -> None:
+        steps_amount = 5
+        time_delta = self.input_time // steps_amount
+
+        time_container = self.query_one(Container)
+        time_container.remove_children()
+
+        for step in range(steps_amount - 1):
+            label_container = Container()
+            time_container.mount(label_container)
+            label_container.mount(Label(str(time_delta * step)))
+
+        last_step_container = Container(classes="last-time-step")
+        time_container.mount(last_step_container)
+        last_step_container.mount(Label(str(self.input_time - time_delta)))
+        last_step_container.mount(Label(str(self.input_time), classes="end-time-value"))

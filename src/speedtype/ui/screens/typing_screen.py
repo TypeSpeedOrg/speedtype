@@ -89,6 +89,7 @@ class TypingScreen(BaseScreen):
         stats_screen.input_stats = InputStats(
             input_time=event.input_time,
             words=event.typed_words,
+            typed_chars_per_second=event.typed_chars_per_second,
         )
 
         self.app.switch_screen(AppScreen.TYPING_SESSION_STATS)

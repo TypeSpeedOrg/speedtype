@@ -10,7 +10,7 @@ from speedtype.ui.types.session_stats import InputStats
 from speedtype.ui.widgets.close_button import CloseButton
 from speedtype.ui.widgets.invalid_chars_stats.invalid_symbols import InvalidCharsStats
 from speedtype.ui.widgets.typing_value_stats.typing_stats import TypingValueStats
-from speedtype.ui.widgets.wpm_plot.plot import WPMPlot
+from speedtype.ui.widgets.wpm_plot.wpm_plot import WPMPlot
 
 
 class TypingSessionStats(BaseScreen):

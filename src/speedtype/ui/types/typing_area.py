@@ -7,13 +7,13 @@ from funcy import memoize
 
 @dataclass(kw_only=True, slots=True)
 class TextLine:
-    words: tuple[str]
+    raw_words: tuple[str]
     length: int
     text: str = field(init=False)
     input_words: list[InputWord] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        self.text = "".join(self.words)
+        self.text = "".join(self.raw_words)
 
     @memoize(key_func=lambda *args, **kwargs: (id(args[0]), kwargs["char_idx"]))
     def get_word_at_char_idx(
@@ -39,12 +39,35 @@ class TextLine:
 
                 end_idx += 1
 
-        input_word = InputWord(correct_chars=0, total_chars=len(word_indexes))
+        input_word = InputWord(
+            correct_chars=0,
+            total_chars=len(word_indexes),
+            number=len(self.input_words),
+        )
 
         self.input_words.append(input_word)
         self.get_word_at_char_idx.memory.update({(id(self), char_idx): input_word for char_idx in word_indexes})
 
         return input_word
+
+    def get_correct_chars_amount_in_range(
+        self,
+        *,
+        start_idx: int,
+        end_idx: int | None = None,
+    ) -> float:
+        end_idx = end_idx or self.length
+
+        typed_words_amount = 0
+        previous_word_number = None
+        for idx in range(start_idx, end_idx):
+            word = self.get_word_at_char_idx(char_idx=idx)
+
+            if word.number != previous_word_number:
+                previous_word_number = word.number
+                typed_words_amount += 1 if word.is_correct else word.correct_chars / word.total_chars
+
+        return typed_words_amount
 
     def __del__(self) -> None:
         self.get_word_at_char_idx.invalidate_all()
@@ -54,6 +77,7 @@ class TextLine:
 class InputWord:
     correct_chars: int
     total_chars: int
+    number: int
     invalid_chars: list[str] = field(default_factory=list)
 
     def inc_correct_chars(self) -> None:
@@ -70,6 +94,10 @@ class InputWord:
         char: str,
     ) -> None:
         self.invalid_chars.append(char)
+
+    @property
+    def is_correct(self) -> bool:
+        return self.correct_chars == self.total_chars
 
     @property
     def plain(self) -> WordStats:

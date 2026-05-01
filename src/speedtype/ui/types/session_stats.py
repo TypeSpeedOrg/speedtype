@@ -1,6 +1,7 @@
 from collections import defaultdict
 from dataclasses import dataclass
-from math import ceil
+from math import ceil, floor
+from statistics import mean
 
 from funcy import cached_readonly
 
@@ -11,6 +12,7 @@ from speedtype.ui.types.typing_area import WordStats
 class InputStats:
     input_time: int
     words: list[WordStats]
+    typed_chars_per_second: list[float]
 
     @cached_readonly
     def invalid_chars(self) -> dict[str, int]:
@@ -32,8 +34,6 @@ class InputStats:
 
     @cached_readonly
     def wpm(self) -> int:
-        time_coef = 60 / self.input_time
-
         words_amount = 0
 
         for word in self.words:
@@ -42,4 +42,8 @@ class InputStats:
             else:
                 words_amount += word.correct_chars / word.total_chars
 
-        return ceil(words_amount * time_coef)
+        return ceil(words_amount * (60 / self.input_time))
+
+    @cached_readonly
+    def mean_words_size(self) -> float:
+        return floor(mean(word.total_chars for word in self.words))

@@ -92,9 +92,11 @@ class TextInput(BaseWidget, can_focus=True):
             self,
             typed_words: list[WordStats],
             input_time: int,
+            typed_chars_per_second: list[float],
         ) -> None:
             self.typed_words = typed_words
             self.input_time = input_time
+            self.typed_chars_per_second = typed_chars_per_second
             super().__init__()
 
     def __init__(
@@ -111,6 +113,7 @@ class TextInput(BaseWidget, can_focus=True):
         self._current_line_idx = 0
         self._current_char_idx = 0
         self._current_word_idx = 0
+        self._correct_chars_collector = 0
 
         self._is_typing = False
 
@@ -151,7 +154,7 @@ class TextInput(BaseWidget, can_focus=True):
             else:
                 self._text_lines.append(
                     TextLine(
-                        words=tuple(line_words),
+                        raw_words=tuple(line_words),
                         length=current_line_length,
                     ),
                 )
@@ -178,8 +181,10 @@ class TextInput(BaseWidget, can_focus=True):
         self._current_line_idx = 0
         self._current_char_idx = 0
         self._current_word_idx = 0
-        self._move_arrow_to_line(line_idx=0)
+        self._correct_chars_collector = 0
         self._text_lines = []
+
+        self._move_arrow_to_line(line_idx=0)
 
         for text_line in self.query(Container).filter(f".{TEXT_LINE_CONTAINER_CLS}"):
             text_line.remove()
@@ -209,7 +214,7 @@ class TextInput(BaseWidget, can_focus=True):
         self._current_char_idx -= 1
 
         if self._current_char == removed_char:
-            self._current_input_word.dec_correct_chars()
+            self._dec_correct_char()
 
     def _add_space(self) -> None:
         if self._current_char != " ":
@@ -223,7 +228,7 @@ class TextInput(BaseWidget, can_focus=True):
 
         elif self._current_char_idx + 1 != self._current_text_line_length:
             self._get_text_label(mark=TextMark.CORRECT).content += " "
-            self._current_input_word.inc_correct_chars()
+            self._inc_correct_char()
 
         self._inc_current_char_idx()
 
@@ -235,7 +240,7 @@ class TextInput(BaseWidget, can_focus=True):
         is_correct_char = char == self._current_char
 
         if is_correct_char:
-            self._current_input_word.inc_correct_chars()
+            self._inc_correct_char()
         else:
             self._current_input_word.add_invalid_char(char=char)
 
@@ -244,6 +249,15 @@ class TextInput(BaseWidget, can_focus=True):
         )
         text_label.content += char
         self._inc_current_char_idx()
+
+    def _inc_correct_char(self) -> None:
+        self._current_input_word.inc_correct_chars()
+        self._correct_chars_collector += 1
+
+    def _dec_correct_char(self) -> None:
+        self._current_input_word.dec_correct_chars()
+        if self._correct_chars_collector:
+            self._correct_chars_collector -= 1
 
     def _get_text_label(
         self,
@@ -339,15 +353,19 @@ class TextInput(BaseWidget, can_focus=True):
     @work(exclusive=True)
     async def _start_timer(self) -> None:
         remaining_seconds = self.input_time
+        typed_chars_per_second = []
 
         while remaining_seconds > 0:
             await asyncio.sleep(1)
+            typed_chars_per_second.append(self._correct_chars_collector)
+            self._correct_chars_collector = 0
             remaining_seconds -= 1
 
         self.post_message(
             self.TypingFinished(
                 typed_words=[word.plain for line in self._text_lines for word in line.input_words if line.input_words],
                 input_time=self.input_time,
+                typed_chars_per_second=typed_chars_per_second,
             )
         )
         self.stop()
