@@ -4,9 +4,11 @@ from statistics import mean
 
 from textual.app import ComposeResult
 from textual.containers import Container
+from textual.reactive import var
 from textual.widgets import Label, Sparkline
 
 from speedtype.ui.constants.colors import BLOCK_BG, BLOCK_COLOR, SELECTED_COLOR
+from speedtype.ui.types.session_stats import InputStats
 from speedtype.ui.widgets.base import BaseWidget
 from speedtype.ui.widgets.wpm_plot.time_axis import TimeAxis
 from speedtype.ui.widgets.wpm_plot.wpm_axis import WPMAxis
@@ -49,6 +51,7 @@ class WPMPlot(BaseWidget):
         }}
     }}
     """
+    input_stats: var[InputStats] = var(None, init=False)
 
     def compose(self) -> ComposeResult:
         yield Label("WORDS PER MINUTE CHART", classes="title")

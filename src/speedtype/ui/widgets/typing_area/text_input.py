@@ -1,5 +1,4 @@
 import asyncio
-from collections.abc import Coroutine
 from contextlib import suppress
 from enum import StrEnum, auto
 
@@ -9,9 +8,8 @@ from textual.containers import Container
 from textual.css.query import NoMatches
 from textual.events import Key
 from textual.message import Message
-from textual.reactive import reactive
+from textual.reactive import var
 from textual.widgets import Label
-from textual.worker import Worker
 
 from speedtype.ui.constants.classes import CSSClass
 from speedtype.ui.constants.colors import (
@@ -20,8 +18,8 @@ from speedtype.ui.constants.colors import (
     INVALID_TEXT_BG,
     INVALID_TEXT_COLOR,
 )
+from speedtype.ui.types.typing_area import InputWord, TextLine, WordStats
 from speedtype.ui.widgets.base import BaseWidget
-from speedtype.ui.widgets.typing_area.types import InputWord, TextLine
 
 
 TEXT_LINE_CONTAINER_CLS = "text_line_container"
@@ -83,15 +81,20 @@ class TextInput(BaseWidget, can_focus=True):
         }}
     }}
     """
-    text: reactive[str] = reactive("", init=True)
+    text: var[str] = var(None, init=False)
+    input_time: var[int] = var(None, init=False)
 
     class TypingStarted(Message):
         pass
 
     class TypingFinished(Message):
-
-        def __init__(self, typed_words: list[tuple[int, int, list[str]]]) -> None:
+        def __init__(
+            self,
+            typed_words: list[WordStats],
+            input_time: int,
+        ) -> None:
             self.typed_words = typed_words
+            self.input_time = input_time
             super().__init__()
 
     def __init__(
@@ -105,14 +108,10 @@ class TextInput(BaseWidget, can_focus=True):
         self._line_length_limit = line_length
         self._text_lines: list[TextLine] = []
 
-        self._waiting_animation: Worker[Coroutine[None, None, None]] | None = None
-        self._timer: Worker[Coroutine[None, None, None]] | None = None
-
         self._current_line_idx = 0
         self._current_char_idx = 0
         self._current_word_idx = 0
 
-        self._input_time = 0
         self._is_typing = False
 
     def compose(self) -> ComposeResult:
@@ -135,7 +134,7 @@ class TextInput(BaseWidget, can_focus=True):
                 self._add_char(char=char)
 
     def on_mount(self) -> None:
-        self._waiting_animation = self._waiting_to_input_animation()
+        self._waiting_to_input_animation()
 
     def watch_text(self) -> None:
         self._text_lines = []
@@ -174,8 +173,7 @@ class TextInput(BaseWidget, can_focus=True):
     def stop(self) -> None:
         self._is_typing = False
 
-        self._waiting_animation = self._waiting_to_input_animation()
-        self._timer.cancel()
+        self._waiting_to_input_animation()
 
         self._current_line_idx = 0
         self._current_char_idx = 0
@@ -186,18 +184,14 @@ class TextInput(BaseWidget, can_focus=True):
         for text_line in self.query(Container).filter(f".{TEXT_LINE_CONTAINER_CLS}"):
             text_line.remove()
 
-    def set_input_time(self, *, input_time: int, ) -> None:
-        self._input_time = input_time
-
     def _start(self) -> None:
         self._is_typing = True
-        self._waiting_animation.cancel()
         self._animate_input(
             value=1,
             easing="in_out_quad",
             duration=0.8,
         )
-        self._timer = self._start_timer()
+        self._start_timer()
         self.post_message(self.TypingStarted())
 
     def _remove_char(self) -> None:
@@ -205,14 +199,17 @@ class TextInput(BaseWidget, can_focus=True):
             return
 
         text_label = self._get_last_label()
+        removed_char = text_label.content[-1]
 
         if len(text_label.content) == 1:
             text_label.remove()
         else:
             text_label.content = text_label.content[:-1]
 
-        self._current_input_word.inc_correct_chars()
         self._current_char_idx -= 1
+
+        if self._current_char == removed_char:
+            self._current_input_word.dec_correct_chars()
 
     def _add_space(self) -> None:
         if self._current_char != " ":
@@ -222,8 +219,11 @@ class TextInput(BaseWidget, can_focus=True):
                 text_label.content += self._current_char
                 self._inc_current_char_idx()
 
-        if self._current_char_idx + 1 != self._current_text_line_length:
+            text_label.content += " "
+
+        elif self._current_char_idx + 1 != self._current_text_line_length:
             self._get_text_label(mark=TextMark.CORRECT).content += " "
+            self._current_input_word.inc_correct_chars()
 
         self._inc_current_char_idx()
 
@@ -338,7 +338,7 @@ class TextInput(BaseWidget, can_focus=True):
 
     @work(exclusive=True)
     async def _start_timer(self) -> None:
-        remaining_seconds = self._input_time
+        remaining_seconds = self.input_time
 
         while remaining_seconds > 0:
             await asyncio.sleep(1)
@@ -346,12 +346,8 @@ class TextInput(BaseWidget, can_focus=True):
 
         self.post_message(
             self.TypingFinished(
-                typed_words=[
-                    word.plain
-                    for line in self._text_lines
-                    for word in line.input_words
-                    if line.input_words
-                ]
+                typed_words=[word.plain for line in self._text_lines for word in line.input_words if line.input_words],
+                input_time=self.input_time,
             )
         )
         self.stop()

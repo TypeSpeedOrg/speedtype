@@ -5,7 +5,7 @@ from collections.abc import Coroutine
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Container
-from textual.reactive import reactive
+from textual.reactive import var
 from textual.worker import Worker
 
 from speedtype.ui.constants.colors import (
@@ -89,8 +89,8 @@ class TypingArea(BaseWidget):
         }}
     }}
     """
-    text_config: reactive[TextConfig] = reactive(dict, init=False)
-    text: reactive[str] = reactive("")
+    text_config: var[TextConfig] = var(dict, init=False)
+    text: var[str] = var("", init=False)
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -116,7 +116,7 @@ class TypingArea(BaseWidget):
 
         config_string = f" {', '.join(config_values)} "
 
-        self.query_one(TextInput).set_input_time(input_time=int(selected_time))
+        self.query_one(TextInput).input_time = int(selected_time)
         self._update_timer(seconds=selected_time)
 
         if self.query_one(Container).border_subtitle != config_string:
@@ -126,6 +126,14 @@ class TypingArea(BaseWidget):
     def on_mount(self) -> None:
         self.regenerate_text()
 
+    @on(TextInput.TypingStarted)
+    def _typing_started(self) -> None:
+        self._timer = self._start_timer()
+
+    @on(TextInput.TypingFinished)
+    def _typing_finished(self) -> None:
+        self.regenerate_text()
+
     def stop(self) -> None:
         self.query_one(TextInput).stop()
         self._timer.cancel()
@@ -133,10 +141,6 @@ class TypingArea(BaseWidget):
             seconds=self.text_config[TextConfiguration.Configuration.TIME][0],
         )
         self.regenerate_text()
-
-    @on(TextInput.TypingStarted)
-    def _typing_started(self) -> None:
-        self._timer = self._start_timer()
 
     def _update_timer(
         self,
@@ -152,11 +156,11 @@ class TypingArea(BaseWidget):
         random.shuffle(words)
         return " ".join(words)
 
-    @work(exclusive=True)
+    @work(exclusive=True, group="regenerate_text")
     async def regenerate_text(self) -> None:
         self.text = await self._load_input_text()
 
-    @work(exclusive=True)
+    @work(exclusive=True, group="timer")
     async def _start_timer(self) -> None:
         remaining_seconds = int(
             self.text_config[TextConfiguration.Configuration.TIME][0],

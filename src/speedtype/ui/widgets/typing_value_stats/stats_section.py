@@ -1,6 +1,6 @@
 from textual.app import ComposeResult
 from textual.containers import Container
-from textual.reactive import reactive
+from textual.reactive import var
 from textual.widgets import Label
 
 from speedtype.ui.constants.classes import CSSClass
@@ -36,7 +36,7 @@ class StatsSection(BaseWidget):
     }}
     """
 
-    value: reactive[str] = reactive("", init=False)
+    value: var[str | int] = var(None, init=False)
 
     def __init__(
         self,
@@ -54,4 +54,4 @@ class StatsSection(BaseWidget):
             yield Label(self._label)
 
     def watch_value(self) -> None:
-        self.query_one("Container.value", Container).query_one(Label).update(self.value)
+        self.query_one("Container.value", Container).query_one(Label).update(str(self.value))

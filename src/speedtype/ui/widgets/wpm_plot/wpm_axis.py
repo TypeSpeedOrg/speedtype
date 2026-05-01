@@ -1,8 +1,9 @@
 from textual.app import ComposeResult
 from textual.containers import Container
-from textual.reactive import reactive
+from textual.reactive import var
 from textual.widgets import Label
 
+from speedtype.ui.types.typing_area import WordStats
 from speedtype.ui.widgets.base import BaseWidget
 
 
@@ -30,8 +31,8 @@ class WPMAxis(BaseWidget):
         }
     }
     """
-
-    _time: reactive[list[int]] = reactive(list)
+    stats: var[list[WordStats]] = var(list, init=False)
+    time_range: var[list[int]] = var(list, init=False)
 
     def compose(self) -> ComposeResult:
         with Container(classes="wpm-speed-axis"):
@@ -42,11 +43,6 @@ class WPMAxis(BaseWidget):
             with Container(classes="min-wpm"):
                 yield Label("0")
 
-    @property
-    def time(self) -> list[int]:
-        return self._time
-
-    @time.setter
-    def time(self, value: list[int]) -> None:
-        self._time = value
-        self.mutate_reactive(self._time)
+    def set_time_range(self, time_range: list[int]) -> None:
+        self.time_range = time_range
+        self.mutate_reactive(WPMAxis.time_range)

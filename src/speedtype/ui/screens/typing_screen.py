@@ -5,6 +5,8 @@ from textual.containers import Container
 from speedtype.ui.constants.colors import APP_BG
 from speedtype.ui.constants.screens import AppScreen
 from speedtype.ui.screens.base import BaseScreen
+from speedtype.ui.screens.session_stats import TypingSessionStats
+from speedtype.ui.types.session_stats import InputStats
 from speedtype.ui.widgets.navigation_section import NavigationSection
 from speedtype.ui.widgets.reload_text import ReloadTextButton
 from speedtype.ui.widgets.stop_button import StopTypeButton
@@ -74,12 +76,22 @@ class TypingScreen(BaseScreen):
         self.query_one(TextConfiguration).hide()
 
     @on(TextInput.TypingFinished)
-    def typing_finished(self, event: TextInput.TypingFinished, ) -> None:
+    def typing_finished(
+        self,
+        event: TextInput.TypingFinished,
+    ) -> None:
         self.query_one(StopTypeButton).hide()
         self.query_one(ReloadTextButton).show()
         self.query_one(NavigationSection).show()
         self.query_one(TextConfiguration).show()
-        self.app.push_screen(AppScreen.TYPING_SESSION_STATS)
+
+        stats_screen: TypingSessionStats = self.app.get_screen(AppScreen.TYPING_SESSION_STATS)
+        stats_screen.input_stats = InputStats(
+            input_time=event.input_time,
+            words=event.typed_words,
+        )
+
+        self.app.switch_screen(AppScreen.TYPING_SESSION_STATS)
 
     @on(TextConfiguration.ConfigUpdated)
     def text_configuration_updated(

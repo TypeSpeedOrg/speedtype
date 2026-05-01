@@ -1,9 +1,12 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container
+from textual.reactive import var
 
 from speedtype.ui.constants.colors import APP_BG
+from speedtype.ui.constants.screens import AppScreen
 from speedtype.ui.screens.base import BaseScreen
+from speedtype.ui.types.session_stats import InputStats
 from speedtype.ui.widgets.close_button import CloseButton
 from speedtype.ui.widgets.invalid_chars_stats.invalid_symbols import InvalidCharsStats
 from speedtype.ui.widgets.typing_value_stats.typing_stats import TypingValueStats
@@ -50,6 +53,7 @@ class TypingSessionStats(BaseScreen):
         }}
     }}
     """
+    input_stats: var[InputStats] = var(None, init=False)
 
     def compose(self) -> ComposeResult:
         yield Container(classes="top")
@@ -58,13 +62,13 @@ class TypingSessionStats(BaseScreen):
             Container(classes="middle"),
             Container(classes="stats"),
         ):
-            yield WPMPlot()
-            yield TypingValueStats()
-            yield InvalidCharsStats()
+            yield WPMPlot().data_bind(TypingSessionStats.input_stats)
+            yield TypingValueStats().data_bind(TypingSessionStats.input_stats)
+            yield InvalidCharsStats().data_bind(TypingSessionStats.input_stats)
 
         with Container(classes="bottom"):
             yield CloseButton()
 
     @on(CloseButton.Closed)
     def close_stats(self) -> None:
-        self.app.pop_screen()
+        self.app.switch_screen(AppScreen.TYPING_SCREEN)
