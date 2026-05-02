@@ -89,7 +89,7 @@ class TypingArea(BaseWidget):
         }}
     }}
     """
-    text_config: var[TextConfig] = var(dict, init=False)
+    text_config: var[TextConfig] = var(None, init=False)
     text: var[str] = var("", init=False)
 
     def __init__(self, *args, **kwargs) -> None:

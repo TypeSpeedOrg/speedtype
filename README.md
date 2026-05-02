@@ -3,10 +3,10 @@ TUI for training typing speed.
 
 ## What is Speedtype?
 Main features of *Speedtype*:
-- Train your typing speed. Configure a text with various settings: language, time, word length, etc., and feel free to start improving your typing skills.
-- Check your typing statistics using the various data we calculate for you.
+- Train your typing speed. Configure a text with various settings: language, time, word length, etc.
+- Check typing statistics with various metrics.
 
-And all of this is running inside your terminal!
+And all of this is running inside your **terminal**!
 
 ## Install
 

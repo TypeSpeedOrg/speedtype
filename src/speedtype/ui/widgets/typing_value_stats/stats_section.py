@@ -35,8 +35,7 @@ class StatsSection(BaseWidget):
         }}
     }}
     """
-
-    value: var[str | int] = var(None, init=False)
+    value: var[str] = var(None, init=False)
 
     def __init__(
         self,
@@ -54,4 +53,4 @@ class StatsSection(BaseWidget):
             yield Label(self._label)
 
     def watch_value(self) -> None:
-        self.query_one("Container.value", Container).query_one(Label).update(str(self.value))
+        self.query_one("Container.value", Container).query_one(Label).update(self.value)

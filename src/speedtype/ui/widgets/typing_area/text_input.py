@@ -81,7 +81,7 @@ class TextInput(BaseWidget, can_focus=True):
         }}
     }}
     """
-    text: var[str] = var(None, init=False)
+    text: var[str] = var("", init=False)
     input_time: var[int] = var(None, init=False)
 
     class TypingStarted(Message):
@@ -140,6 +140,9 @@ class TextInput(BaseWidget, can_focus=True):
         self._waiting_to_input_animation()
 
     def watch_text(self) -> None:
+        if not self.text:
+            return
+
         self._text_lines = []
         current_line_length = 0
         line_words = []
@@ -150,14 +153,8 @@ class TextInput(BaseWidget, can_focus=True):
             if current_line_length + word_length < self._line_length_limit:
                 line_words.extend((word, " "))
                 current_line_length += word_length
-
             else:
-                self._text_lines.append(
-                    TextLine(
-                        raw_words=tuple(line_words),
-                        length=current_line_length,
-                    ),
-                )
+                self._text_lines.append(TextLine.new(words=tuple(line_words)))
                 line_words = []
                 current_line_length = 0
 
@@ -174,10 +171,9 @@ class TextInput(BaseWidget, can_focus=True):
             placeholder_container.mount(Label(text_line.text))
 
     def stop(self) -> None:
-        self._is_typing = False
-
         self._waiting_to_input_animation()
 
+        self._is_typing = False
         self._current_line_idx = 0
         self._current_char_idx = 0
         self._current_word_idx = 0

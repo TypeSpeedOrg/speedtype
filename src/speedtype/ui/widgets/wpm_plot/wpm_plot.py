@@ -1,6 +1,3 @@
-import random
-from itertools import repeat
-
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.reactive import var
@@ -13,9 +10,6 @@ from speedtype.ui.widgets.base import BaseWidget
 from speedtype.ui.widgets.wpm_plot.plot import Plot
 from speedtype.ui.widgets.wpm_plot.time_axis import TimeAxis
 from speedtype.ui.widgets.wpm_plot.wpm_axis import WPMAxis
-
-
-data = [i + random.randint(-5, 3) + 0.5 for i in repeat(50, 30)]
 
 
 class WPMPlot(BaseWidget):
