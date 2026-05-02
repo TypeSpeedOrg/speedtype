@@ -5,13 +5,13 @@ from textual.message import Message
 from speedtype.ui.widgets.menu_island import ButtonStyle, MenuIsland, MenuIslandButton
 
 
-class StopTypeButton(MenuIsland):
-    class Stopped(Message):
+class CloseButton(MenuIsland):
+    class Closed(Message):
         pass
 
     def compose(self) -> ComposeResult:
         yield MenuIslandButton(
-            label="STOP",
+            label="CLOSE",
             value=None,
             persist_click=False,
             button_style=ButtonStyle.ABORT,
@@ -19,4 +19,4 @@ class StopTypeButton(MenuIsland):
 
     @on(MenuIslandButton.Pressed)
     def stop_button_pressed(self) -> None:
-        self.post_message(self.Stopped())
+        self.post_message(self.Closed())

@@ -1,0 +1,95 @@
+from contextlib import suppress
+from dataclasses import dataclass, field
+from typing import NamedTuple
+
+from funcy import memoize
+
+
+@dataclass(kw_only=True, slots=True)
+class TextLine:
+    raw_words: tuple[str]
+    length: int
+    text: str
+    input_words: list[InputWord] = field(default_factory=list)
+
+    @classmethod
+    def new(
+        cls,
+        *,
+        words: tuple[str],
+    ) -> TextLine:
+        return TextLine(
+            raw_words=words,
+            text=(text := "".join(words)),
+            length=len(text),
+        )
+
+    @memoize(key_func=lambda *args, **kwargs: (id(args[0]), kwargs["char_idx"]))
+    def get_word_at_char_idx(
+        self,
+        *,
+        char_idx: int,
+    ) -> InputWord:
+        word_indexes = {char_idx}
+
+        start_idx = char_idx
+        with suppress(IndexError):
+            while start_idx and self.text[start_idx - 1] != " ":
+                word_indexes.add(start_idx)
+                start_idx -= 1
+
+        end_idx = char_idx
+        with suppress(IndexError):
+            while True:
+                word_indexes.add(end_idx)
+
+                if self.text[end_idx] == " ":
+                    break
+
+                end_idx += 1
+
+        input_word = InputWord(
+            correct_chars=0,
+            total_chars=len(word_indexes),
+        )
+
+        self.input_words.append(input_word)
+        self.get_word_at_char_idx.memory.update({(id(self), char_idx): input_word for char_idx in word_indexes})
+
+        return input_word
+
+
+@dataclass(kw_only=True, slots=True)
+class InputWord:
+    correct_chars: int
+    total_chars: int
+    invalid_chars: list[str] = field(default_factory=list)
+
+    def inc_correct_chars(self) -> None:
+        if self.correct_chars < self.total_chars:
+            self.correct_chars += 1
+
+    def dec_correct_chars(self) -> None:
+        if self.correct_chars:
+            self.correct_chars -= 1
+
+    def add_invalid_char(
+        self,
+        *,
+        char: str,
+    ) -> None:
+        self.invalid_chars.append(char)
+
+    @property
+    def plain(self) -> WordStats:
+        return WordStats(
+            correct_chars=self.correct_chars,
+            total_chars=self.total_chars,
+            invalid_chars=self.invalid_chars,
+        )
+
+
+class WordStats(NamedTuple):
+    correct_chars: int
+    total_chars: int
+    invalid_chars: list[str]

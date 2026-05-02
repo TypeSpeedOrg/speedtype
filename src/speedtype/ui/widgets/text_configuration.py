@@ -25,9 +25,9 @@ class TextConfiguration(MenuIsland):
         DIFFICULTY = "DIFFICULTY"
 
     class TimeOption(StrEnum):
+        SEC_15 = "15"
         SEC_30 = "30"
         SEC_60 = "60"
-        SEC_90 = "90"
         SEC_120 = "120"
 
     class Language(StrEnum):
@@ -66,17 +66,17 @@ class TextConfiguration(MenuIsland):
             self.Configuration.TIME: SectionMenuIsland(
                 options=(
                     SectionOption(
+                        label=self.TimeOption.SEC_15,
+                        value=self.TimeOption.SEC_15,
+                        css_class=CSSClass.SELECTED,
+                    ),
+                    SectionOption(
                         label=self.TimeOption.SEC_30,
                         value=self.TimeOption.SEC_30,
                     ),
                     SectionOption(
                         label=self.TimeOption.SEC_60,
                         value=self.TimeOption.SEC_60,
-                        css_class=CSSClass.SELECTED,
-                    ),
-                    SectionOption(
-                        label=self.TimeOption.SEC_90,
-                        value=self.TimeOption.SEC_90,
                     ),
                     SectionOption(
                         label=self.TimeOption.SEC_120,
