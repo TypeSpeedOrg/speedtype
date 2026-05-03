@@ -2,7 +2,8 @@ from textual import on
 from textual.app import ComposeResult
 from textual.message import Message
 
-from speedtype.ui.widgets.menu_island import ButtonStyle, MenuIsland, MenuIslandButton
+from speedtype.ui.widgets.menu_island.button import ButtonStyle, MenuIslandButton
+from speedtype.ui.widgets.menu_island.island import MenuIsland
 
 
 class CloseButton(MenuIsland):
@@ -18,5 +19,5 @@ class CloseButton(MenuIsland):
         )
 
     @on(MenuIslandButton.Pressed)
-    def stop_button_pressed(self) -> None:
+    def _stop_button_pressed(self) -> None:
         self.post_message(self.Closed())

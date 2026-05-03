@@ -1,18 +1,23 @@
-SELECTED_COLOR = "#ffd43b"
-APP_BG = "#1a1d36"
+from textual.theme import Theme
 
-BLOCK_BG = "#101224"
-BLOCK_COLOR = "#5f647a"
-BLOCK_HOVER_BG = "#161730"
-BLOCK_HOVER_COLOR = "#6c718c"
 
-INVALID_TEXT_COLOR = "#f56788"
-INVALID_TEXT_BG = "#9c1131"
-
-CORRECT_TEXT_COLOR = "#86e39d"
-CORRECT_TEXT_BG = "#119c34"
-
-ABORT_BLOCK_BG = "#6e081f"
-ABORT_BLOCK_COLOR = "#fc9fb4"
-ABORT_HOVER_BG = "#820a26"
-ABORT_HOVER_COLOR = "#f5aebe"
+denim_theme = Theme(
+    name="denim",
+    primary=(primary := "#ffd43b"),
+    foreground=(foreground := "#5f647a"),
+    background=(background := "#1a1d36"),
+    surface=(surface := "#101224"),
+    accent="#6e081f",
+    variables={
+        "footer-background": surface,
+        "footer-foreground": foreground,
+        "footer-key-foreground": primary,
+        "scrollbar": primary,
+        "scrollbar-hover": primary,
+        "scrollbar-active": primary,
+        "scrollbar-background": surface,
+        "scrollbar-background-hover": surface,
+        "scrollbar-background-active": surface,
+    },
+    dark=True,
+)

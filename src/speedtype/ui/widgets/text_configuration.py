@@ -6,7 +6,8 @@ from textual.app import ComposeResult
 from textual.message import Message
 
 from speedtype.ui.constants.classes import CSSClass
-from speedtype.ui.widgets.menu_island import MenuIsland, MenuIslandText
+from speedtype.ui.widgets.menu_island.island import MenuIsland
+from speedtype.ui.widgets.menu_island.text import MenuIslandText
 from speedtype.ui.widgets.section_menu_island import (
     MultipleSectionMenuIsland,
     SectionConfiguration,
@@ -176,7 +177,7 @@ class TextConfiguration(MenuIsland):
             yield section
 
     @on(SectionMenuIsland.OptionSelected)
-    def option_selected(
+    def _option_selected(
         self,
         event: SectionMenuIsland.OptionSelected,
     ) -> None:
@@ -195,7 +196,7 @@ class TextConfiguration(MenuIsland):
                 section.hide()
 
     @on(SectionMenuIsland.OptionRemoved)
-    def option_removed(
+    def _option_removed(
         self,
         event: SectionMenuIsland.OptionRemoved,
     ) -> None:

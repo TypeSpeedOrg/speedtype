@@ -4,36 +4,34 @@ from textual.reactive import var
 from textual.widgets import Label
 
 from speedtype.ui.constants.classes import CSSClass
-from speedtype.ui.constants.colors import BLOCK_BG, BLOCK_COLOR
 from speedtype.ui.widgets.base import BaseWidget
 
 
 class StatsSection(BaseWidget):
-    DEFAULT_CSS = f"""
-    StatsSection {{
+    DEFAULT_CSS = """
+    StatsSection {
         layout: grid;
         grid-size: 2;
         grid-columns: 30% 70%;
-        background: {BLOCK_BG};
+        background: $surface;
         align-vertical: middle;
         padding: 0 2;
 
-        .value {{
+        .value {
             width: 100%;
             height: auto;
-        }}
+        }
 
-        .description {{
+        .description {
             width: 100%;
             height: auto;
 
-            Label {{
+            Label {
                 width: 100%;
-                color: {BLOCK_COLOR};
                 text-align: right;
-            }}
-        }}
-    }}
+            }
+        }
+    }
     """
     value: var[str] = var(None, init=False)
 

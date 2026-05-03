@@ -2,21 +2,12 @@ import asyncio
 from enum import StrEnum, auto
 
 from rich.repr import Result
+from textual import events, on
 from textual.app import ComposeResult
 from textual.message import Message
 from textual.widgets import Label
 
 from speedtype.ui.constants.classes import CSSClass
-from speedtype.ui.constants.colors import (
-    ABORT_BLOCK_BG,
-    ABORT_BLOCK_COLOR,
-    ABORT_HOVER_BG,
-    ABORT_HOVER_COLOR,
-    BLOCK_BG,
-    BLOCK_COLOR,
-    BLOCK_HOVER_BG,
-    BLOCK_HOVER_COLOR,
-)
 from speedtype.ui.widgets.base import BaseWidget
 
 
@@ -25,42 +16,7 @@ class ButtonStyle(StrEnum):
     ABORT = auto()
 
 
-class MenuIsland(BaseWidget):
-    DEFAULT_CSS = """
-    MenuIsland {
-        width: auto;
-        height: auto;
-        margin: 1;
-        layout: horizontal;
-    }
-    """
-
-
-class MenuIslandText(BaseWidget):
-    DEFAULT_CSS = f"""
-    MenuIslandText {{
-        color: {BLOCK_COLOR};
-        height: auto;
-        width: auto;
-        padding: 1 3;
-        background: {BLOCK_BG};
-    }}
-    """
-
-    def __init__(
-        self,
-        *args,
-        label: str,
-        **kwargs,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        self._label = label
-
-    def compose(self) -> ComposeResult:
-        yield Label(self._label)
-
-
-class MenuIslandButton(BaseWidget):
+class MenuIslandButton(BaseWidget, can_focus=True):
     DEFAULT_CSS = f"""
     MenuIslandButton {{
         height: auto;
@@ -68,25 +24,24 @@ class MenuIslandButton(BaseWidget):
         padding: 1 3;
 
         &.{ButtonStyle.REGULAR} {{
-            background: {BLOCK_BG};
-            color: {BLOCK_COLOR};
+            background: $surface;
         }}
 
         &.{ButtonStyle.ABORT} {{
-            background: {ABORT_BLOCK_BG};
-            color: {ABORT_BLOCK_COLOR};
+            background: $accent;
+            color: $accent-color;
         }}
 
         &.hover-{ButtonStyle.REGULAR} {{
             text-style: underline;
-            background: {BLOCK_HOVER_BG};
-            color: {BLOCK_HOVER_COLOR};
+            background: $hover-background;
+            color: $hover-foreground;
         }}
 
         &.hover-{ButtonStyle.ABORT} {{
             text-style: underline;
-            background: {ABORT_HOVER_BG};
-            color: {ABORT_HOVER_COLOR};
+            background: $accent-hover-background;
+            color: $accent-hover-color;
         }}
     }}
     """
@@ -122,13 +77,16 @@ class MenuIslandButton(BaseWidget):
     def compose(self) -> ComposeResult:
         yield Label(self._label)
 
-    def on_enter(self) -> None:
-        self.add_class(f"hover-{self._button_style}")
+    @property
+    def value(self) -> str:
+        return self._value
 
-    def on_leave(self) -> None:
-        self.remove_class(f"hover-{self._button_style}")
+    @on(events.Key)
+    @on(events.Click)
+    async def _button_pressed(self, event: events.Key | events.Click) -> None:
+        if isinstance(event, events.Key) and event.name != "enter":
+            return
 
-    async def on_click(self) -> None:
         self.add_class(CSSClass.SELECTED)
 
         if not self._persist_click:
@@ -137,6 +95,13 @@ class MenuIslandButton(BaseWidget):
 
         self.post_message(self.Pressed(value=self._value))
 
-    @property
-    def value(self) -> str:
-        return self._value
+    @on(events.Enter)
+    @on(events.Focus)
+    def _button_selected(self) -> None:
+        self.add_class(f"hover-{self._button_style}")
+
+    @on(events.Leave)
+    @on(events.Blur)
+    def _button_left(self, event: events.Blur | events.Leave) -> None:
+        if not self.has_focus or isinstance(event, events.Blur):
+            self.remove_class(f"hover-{self._button_style}")

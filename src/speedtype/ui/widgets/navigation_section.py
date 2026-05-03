@@ -2,7 +2,7 @@ from enum import StrEnum
 
 from textual.app import ComposeResult
 
-from speedtype.ui.widgets.menu_island import MenuIsland
+from speedtype.ui.widgets.menu_island.island import MenuIsland
 from speedtype.ui.widgets.section_menu_island import SectionMenuIsland, SectionOption
 
 

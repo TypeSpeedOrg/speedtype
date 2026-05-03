@@ -4,26 +4,17 @@ from textual.app import ComposeResult
 from textual.reactive import var
 from textual.widgets import Sparkline
 
-from speedtype.ui.constants.colors import SELECTED_COLOR
 from speedtype.ui.types.wpm_plot import PlotData
 from speedtype.ui.widgets.base import BaseWidget
 
 
 class Plot(BaseWidget):
-    DEFAULT_CSS = f"""
-    Plot {{
-        Sparkline {{
+    DEFAULT_CSS = """
+    Plot {
+        Sparkline {
             height: 100%;
-
-            .sparkline--max-color {{
-                color: {SELECTED_COLOR};
-            }}
-
-            .sparkline--min-color {{
-                color: #f2a218;
-            }}
-        }}
-    }}
+        }
+    }
     """
     plot_data: var[PlotData] = var(None, init=False)
 

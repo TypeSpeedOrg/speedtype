@@ -3,7 +3,6 @@ from textual.containers import Container
 from textual.reactive import var
 from textual.widgets import Label
 
-from speedtype.ui.constants.colors import BLOCK_BG, BLOCK_COLOR
 from speedtype.ui.types.session_stats import InputStats
 from speedtype.ui.types.wpm_plot import PlotData
 from speedtype.ui.widgets.base import BaseWidget
@@ -13,26 +12,25 @@ from speedtype.ui.widgets.wpm_plot.wpm_axis import WPMAxis
 
 
 class WPMPlot(BaseWidget):
-    DEFAULT_CSS = f"""
-    WPMPlot {{
-        background: {BLOCK_BG};
-        color: {BLOCK_COLOR};
+    DEFAULT_CSS = """
+    WPMPlot {
+        background: $surface;
         layout: vertical;
         padding: 1 5 1 2;
 
-        .title {{
+        .title {
             text-align: center;
             width: 100%;
-        }}
+        }
 
-        .plot {{
+        .plot {
             padding: 1 0 0 0;
             layout: grid;
             grid-size: 2 2;
             grid-rows: 1fr 2;
             grid-columns: 6 1fr;
-        }}
-    }}
+        }
+    }
     """
     input_stats: var[InputStats] = var(None, init=False)
 

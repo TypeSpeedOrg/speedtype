@@ -1,8 +1,9 @@
 import asyncio
+from collections.abc import Coroutine
 from contextlib import suppress
 from enum import StrEnum, auto
 
-from textual import work
+from textual import events, on, work
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.css.query import NoMatches
@@ -10,14 +11,9 @@ from textual.events import Key
 from textual.message import Message
 from textual.reactive import var
 from textual.widgets import Label
+from textual.worker import Worker
 
 from speedtype.ui.constants.classes import CSSClass
-from speedtype.ui.constants.colors import (
-    CORRECT_TEXT_BG,
-    CORRECT_TEXT_COLOR,
-    INVALID_TEXT_BG,
-    INVALID_TEXT_COLOR,
-)
 from speedtype.ui.types.typing_area import InputWord, TextLine, WordStats
 from speedtype.ui.widgets.base import BaseWidget
 
@@ -69,13 +65,13 @@ class TextInput(BaseWidget, can_focus=True):
                 height: auto;
 
                 &.{TextMark.INVALID} {{
-                    color: {INVALID_TEXT_COLOR};
-                    background: {INVALID_TEXT_BG} 20%;
+                    color: $invalid-text-color;
+                    background: $invalid-text-background 20%;
                 }}
 
                 &.{TextMark.CORRECT} {{
-                    color: {CORRECT_TEXT_COLOR};
-                    background: {CORRECT_TEXT_BG} 20%;
+                    color: $correct-text-color;
+                    background: $correct-text-background 20%;
                 }}
             }}
         }}
@@ -107,6 +103,8 @@ class TextInput(BaseWidget, can_focus=True):
     ) -> None:
         super().__init__(*args, **kwargs)
 
+        self._input_animation: Worker[Coroutine[None, None, None]] | None = None
+
         self._line_length_limit = line_length
         self._text_lines: list[TextLine] = []
 
@@ -114,30 +112,11 @@ class TextInput(BaseWidget, can_focus=True):
         self._current_char_idx = 0
         self._current_word_idx = 0
         self._correct_chars_collector = 0
-
         self._is_typing = False
 
     def compose(self) -> ComposeResult:
         yield Label(">", id=LINE_ARROW_ID, classes=CSSClass.SELECTED)
         yield Container(id=PLACEHOLDER_CONTAINER_ID)
-
-    def on_key(
-        self,
-        event: Key,
-    ) -> None:
-        if not self._is_typing:
-            self._start()
-
-        match event.name, event.character, event.is_printable:
-            case "backspace", _, _:
-                self._remove_char()
-            case "space", _, _:
-                self._add_space()
-            case _, char, True:
-                self._add_char(char=char)
-
-    def on_mount(self) -> None:
-        self._waiting_to_input_animation()
 
     def watch_text(self) -> None:
         if not self.text:
@@ -171,7 +150,7 @@ class TextInput(BaseWidget, can_focus=True):
             placeholder_container.mount(Label(text_line.text))
 
     def stop(self) -> None:
-        self._waiting_to_input_animation()
+        self._input_animation = self._waiting_to_input_animation()
 
         self._is_typing = False
         self._current_line_idx = 0
@@ -246,15 +225,6 @@ class TextInput(BaseWidget, can_focus=True):
         text_label.content += char
         self._inc_current_char_idx()
 
-    def _inc_correct_char(self) -> None:
-        self._current_input_word.inc_correct_chars()
-        self._correct_chars_collector += 1
-
-    def _dec_correct_char(self) -> None:
-        self._current_input_word.dec_correct_chars()
-        if self._correct_chars_collector:
-            self._correct_chars_collector -= 1
-
     def _get_text_label(
         self,
         *,
@@ -275,14 +245,6 @@ class TextInput(BaseWidget, can_focus=True):
 
         return None
 
-    def _inc_current_char_idx(self) -> None:
-        self._current_char_idx += 1
-
-        if self._current_char_idx == self._current_text_line_length:
-            self._current_line_idx += 1
-            self._current_char_idx = 0
-            self._create_new_line()
-
     def _create_new_line(self) -> Container:
         text_line_container = Container(classes=TEXT_LINE_CONTAINER_CLS)
         text_line_container.styles.layer = f"layer_{self._current_line_idx}"
@@ -297,6 +259,23 @@ class TextInput(BaseWidget, can_focus=True):
     ) -> None:
         self.get_widget_by_id(LINE_ARROW_ID, Label).styles.padding = (line_idx, 1, 0, 0)
 
+    def _inc_current_char_idx(self) -> None:
+        self._current_char_idx += 1
+
+        if self._current_char_idx == self._current_text_line_length:
+            self._current_line_idx += 1
+            self._current_char_idx = 0
+            self._create_new_line()
+
+    def _inc_correct_char(self) -> None:
+        self._current_input_word.inc_correct_chars()
+        self._correct_chars_collector += 1
+
+    def _dec_correct_char(self) -> None:
+        self._current_input_word.dec_correct_chars()
+        if self._correct_chars_collector:
+            self._correct_chars_collector -= 1
+
     def _animate_input(self, value: float, easing: str, duration: float) -> None:
         self.get_widget_by_id(PLACEHOLDER_CONTAINER_ID, Container).styles.animate(
             "opacity",
@@ -305,28 +284,33 @@ class TextInput(BaseWidget, can_focus=True):
             easing=easing,
         )
 
-    @property
-    def _current_text_line(self) -> TextLine:
-        return self._text_lines[self._current_line_idx]
+    @on(events.Focus)
+    def _start_animation(self) -> None:
+        if not self._is_typing:
+            self._input_animation = self._waiting_to_input_animation()
 
-    @property
-    def _current_input_word(self) -> InputWord:
-        return self._current_text_line.get_word_at_char_idx(char_idx=self._current_char_idx)
+    @on(events.Blur)
+    def _disable_animation(self) -> None:
+        self._input_animation.cancel()
 
-    @property
-    def _current_char(self) -> str:
-        return self._current_text_line.text[self._current_char_idx]
+    @on(events.Key)
+    def _process_typed_symbol(
+        self,
+        event: Key,
+    ) -> None:
+        if not event.is_printable and event.name != "backspace":
+            return
 
-    @property
-    def _current_text_line_length(self) -> int:
-        return self._current_text_line.length
+        if not self._is_typing:
+            self._start()
 
-    @property
-    def _current_text_line_container(self) -> Container:
-        try:
-            return self.query(Container).filter(f".{TEXT_LINE_CONTAINER_CLS}").last()
-        except NoMatches:
-            return self._create_new_line()
+        match event.name, event.character:
+            case "backspace", _:
+                self._remove_char()
+            case "space", _:
+                self._add_space()
+            case _, char:
+                self._add_char(char=char)
 
     @work(exclusive=True)
     async def _waiting_to_input_animation(self) -> None:
@@ -365,3 +349,26 @@ class TextInput(BaseWidget, can_focus=True):
             )
         )
         self.stop()
+
+    @property
+    def _current_text_line(self) -> TextLine:
+        return self._text_lines[self._current_line_idx]
+
+    @property
+    def _current_input_word(self) -> InputWord:
+        return self._current_text_line.get_word_at_char_idx(char_idx=self._current_char_idx)
+
+    @property
+    def _current_char(self) -> str:
+        return self._current_text_line.text[self._current_char_idx]
+
+    @property
+    def _current_text_line_length(self) -> int:
+        return self._current_text_line.length
+
+    @property
+    def _current_text_line_container(self) -> Container:
+        try:
+            return self.query(Container).filter(f".{TEXT_LINE_CONTAINER_CLS}").last()
+        except NoMatches:
+            return self._create_new_line()
