@@ -118,12 +118,7 @@ class TypingArea(BaseWidget):
             self.regenerate_text()
 
     def stop(self) -> None:
-        self.query_one(TextInput).stop()
-        self._timer.cancel()
-        self._update_timer(
-            seconds=self.text_config[TextConfiguration.Configuration.TIME][0],
-        )
-        self.regenerate_text()
+        self.query_one(TextInput).stop(is_finished=False)
 
     def _update_timer(
         self,
@@ -148,7 +143,10 @@ class TypingArea(BaseWidget):
         self._timer = self._start_timer()
 
     @on(TextInput.TypingFinished)
-    def _typing_finished(self) -> None:
+    @on(TextInput.TypingStopped)
+    def _reset_typing_area(self) -> None:
+        self._timer.cancel()
+        self._update_timer(seconds=self.text_config[TextConfiguration.Configuration.TIME][0])
         self.regenerate_text()
 
     @work(exclusive=True, group="regenerate_text")
@@ -157,13 +155,9 @@ class TypingArea(BaseWidget):
 
     @work(exclusive=True, group="timer")
     async def _start_timer(self) -> None:
-        remaining_seconds = int(
-            self.text_config[TextConfiguration.Configuration.TIME][0],
-        )
+        remaining_seconds = int(self.text_config[TextConfiguration.Configuration.TIME][0])
 
         while remaining_seconds > 0:
             await asyncio.sleep(1)
             remaining_seconds -= 1
             self._update_timer(seconds=remaining_seconds)
-
-        self._update_timer(seconds=self.text_config[TextConfiguration.Configuration.TIME][0])

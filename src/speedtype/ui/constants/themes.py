@@ -8,6 +8,7 @@ denim_theme = Theme(
     background=(background := "#1a1d36"),
     surface=(surface := "#101224"),
     accent="#6e081f",
+    panel=background,
     variables={
         "footer-background": surface,
         "footer-foreground": foreground,

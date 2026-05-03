@@ -65,6 +65,9 @@ class TypingScreen(BaseScreen):
     @on(StopTypeButton.Stopped)
     def _stop_button_pressed(self) -> None:
         self.query_one(TypingArea).stop()
+
+    @on(TextInput.TypingStopped)
+    def _typing_stopped(self) -> None:
         self.query_one(StopTypeButton).hide()
         self.query_one(ReloadTextButton).show()
         self.query_one(NavigationSection).show()

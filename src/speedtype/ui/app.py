@@ -2,8 +2,8 @@ from textual import events, on
 from textual.app import App
 from textual.binding import Binding
 
-from speedtype.ui.constants.colors import denim_theme
 from speedtype.ui.constants.screens import AppScreen
+from speedtype.ui.constants.themes import denim_theme
 from speedtype.ui.screens.session_stats import TypingSessionStats
 from speedtype.ui.screens.typing_screen import TypingScreen
 
@@ -19,7 +19,7 @@ class SpeedType(App):
             "ctrl+q",
             "quit",
             "Quit",
-            tooltip="Quit the app and return to the command prompt.",
+            tooltip="Quit the speedtype.",
             show=True,
             priority=True,
         ),
@@ -27,19 +27,14 @@ class SpeedType(App):
             "tab",
             "focus_next",
             "Focus Next",
+            tooltip="Focus next widget on the screen.",
             priority=True,
         ),
         Binding(
             "shift+tab",
             "focus_previous",
             "Focus Previous",
-            priority=True,
-        ),
-        Binding(
-            "enter",
-            "noop",
-            "Press Button",
-            key_display="enter",
+            tooltip="Focus previous widget on the screen.",
             priority=True,
         ),
     ]
@@ -48,7 +43,6 @@ class SpeedType(App):
     def _show_typing_screen(self) -> None:
         self.register_theme(denim_theme)
         self.theme = "denim"
-
         self.push_screen(AppScreen.TYPING_SCREEN)
 
     def get_theme_variable_defaults(self) -> dict[str, str]:

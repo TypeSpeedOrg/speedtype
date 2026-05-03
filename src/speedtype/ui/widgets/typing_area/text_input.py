@@ -5,6 +5,7 @@ from enum import StrEnum, auto
 
 from textual import events, on, work
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Container
 from textual.css.query import NoMatches
 from textual.events import Key
@@ -21,6 +22,10 @@ from speedtype.ui.widgets.base import BaseWidget
 TEXT_LINE_CONTAINER_CLS = "text_line_container"
 PLACEHOLDER_CONTAINER_ID = "placeholder_container"
 LINE_ARROW_ID = "text_line_arrow"
+
+INPUT_ANIMATION_DURATION = 0.7
+INPUT_TEXT_OPACITY_LIMIT = 0.5
+OPACITY_SPEED = (1 - INPUT_TEXT_OPACITY_LIMIT) / INPUT_ANIMATION_DURATION
 
 
 class TextMark(StrEnum):
@@ -77,10 +82,20 @@ class TextInput(BaseWidget, can_focus=True):
         }}
     }}
     """
+    BINDINGS = [
+        Binding(
+            key="ctrl+s",
+            action="stop",
+            description="Stop typing",
+        )
+    ]
     text: var[str] = var("", init=False)
     input_time: var[int] = var(None, init=False)
 
     class TypingStarted(Message):
+        pass
+
+    class TypingStopped(Message):
         pass
 
     class TypingFinished(Message):
@@ -112,6 +127,8 @@ class TextInput(BaseWidget, can_focus=True):
         self._current_char_idx = 0
         self._current_word_idx = 0
         self._correct_chars_collector = 0
+        self._typed_chars_per_second = []
+
         self._is_typing = False
 
     def compose(self) -> ComposeResult:
@@ -149,29 +166,51 @@ class TextInput(BaseWidget, can_focus=True):
         for text_line in self._text_lines:
             placeholder_container.mount(Label(text_line.text))
 
-    def stop(self) -> None:
-        self._input_animation = self._waiting_to_input_animation()
+    def action_stop(self) -> None:
+        self.stop(is_finished=False)
 
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:  # noqa: ARG002
+        return self._is_typing if action == "stop" else None
+
+    def stop(self, *, is_finished: bool) -> None:
         self._is_typing = False
+
+        if is_finished:
+            self.post_message(
+                self.TypingFinished(
+                    typed_words=[
+                        word.plain for line in self._text_lines for word in line.input_words if line.input_words
+                    ],
+                    input_time=self.input_time,
+                    typed_chars_per_second=self._typed_chars_per_second,
+                )
+            )
+        else:
+            self.post_message(self.TypingStopped())
+
+        self._typed_chars_per_second = []
         self._current_line_idx = 0
         self._current_char_idx = 0
         self._current_word_idx = 0
         self._correct_chars_collector = 0
         self._text_lines = []
-
-        self._move_arrow_to_line(line_idx=0)
+        self._input_animation = self._waiting_to_input_animation()
 
         for text_line in self.query(Container).filter(f".{TEXT_LINE_CONTAINER_CLS}"):
             text_line.remove()
+
+        self._move_arrow_to_line(line_idx=0)
+        self.refresh_bindings()
 
     def _start(self) -> None:
         self._is_typing = True
         self._animate_input(
             value=1,
             easing="in_out_quad",
-            duration=0.8,
+            duration=self._get_remaining_input_animation_duration(final_value=1),
         )
         self._start_timer()
+        self.refresh_bindings()
         self.post_message(self.TypingStarted())
 
     def _remove_char(self) -> None:
@@ -293,6 +332,12 @@ class TextInput(BaseWidget, can_focus=True):
     def _disable_animation(self) -> None:
         self._input_animation.cancel()
 
+        self._animate_input(
+            value=INPUT_TEXT_OPACITY_LIMIT,
+            easing="in_out_quad",
+            duration=self._get_remaining_input_animation_duration(final_value=INPUT_TEXT_OPACITY_LIMIT),
+        )
+
     @on(events.Key)
     def _process_typed_symbol(
         self,
@@ -314,41 +359,31 @@ class TextInput(BaseWidget, can_focus=True):
 
     @work(exclusive=True)
     async def _waiting_to_input_animation(self) -> None:
-        duration = 0.8
-
         while True:
-            self._animate_input(
-                value=0.5,
-                easing="in_out_quad",
-                duration=duration,
-            )
-            await asyncio.sleep(duration)
             self._animate_input(
                 value=1,
                 easing="in_out_quad",
-                duration=duration,
+                duration=INPUT_ANIMATION_DURATION,
             )
-            await asyncio.sleep(duration)
+            await asyncio.sleep(INPUT_ANIMATION_DURATION)
+            self._animate_input(
+                value=INPUT_TEXT_OPACITY_LIMIT,
+                easing="in_out_quad",
+                duration=INPUT_ANIMATION_DURATION,
+            )
+            await asyncio.sleep(INPUT_ANIMATION_DURATION)
 
     @work(exclusive=True)
     async def _start_timer(self) -> None:
         remaining_seconds = self.input_time
-        typed_chars_per_second = []
 
         while remaining_seconds > 0:
             await asyncio.sleep(1)
-            typed_chars_per_second.append(self._correct_chars_collector)
+            self._typed_chars_per_second.append(self._correct_chars_collector)
             self._correct_chars_collector = 0
             remaining_seconds -= 1
 
-        self.post_message(
-            self.TypingFinished(
-                typed_words=[word.plain for line in self._text_lines for word in line.input_words if line.input_words],
-                input_time=self.input_time,
-                typed_chars_per_second=typed_chars_per_second,
-            )
-        )
-        self.stop()
+        self.stop(is_finished=True)
 
     @property
     def _current_text_line(self) -> TextLine:
@@ -372,3 +407,7 @@ class TextInput(BaseWidget, can_focus=True):
             return self.query(Container).filter(f".{TEXT_LINE_CONTAINER_CLS}").last()
         except NoMatches:
             return self._create_new_line()
+
+    def _get_remaining_input_animation_duration(self, *, final_value: float) -> float:
+        current_opacity = self.get_widget_by_id(PLACEHOLDER_CONTAINER_ID, Container).styles.opacity
+        return abs(final_value - current_opacity) / OPACITY_SPEED

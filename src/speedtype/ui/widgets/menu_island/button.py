@@ -4,6 +4,7 @@ from enum import StrEnum, auto
 from rich.repr import Result
 from textual import events, on
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.message import Message
 from textual.widgets import Label
 
@@ -45,6 +46,15 @@ class MenuIslandButton(BaseWidget, can_focus=True):
         }}
     }}
     """
+    BINDINGS = [
+        Binding(
+            key="enter",
+            action="press_buton",
+            description="Press Button",
+            key_display="enter",
+            priority=True,
+        ),
+    ]
 
     class Pressed(Message):
         def __init__(
@@ -77,16 +87,7 @@ class MenuIslandButton(BaseWidget, can_focus=True):
     def compose(self) -> ComposeResult:
         yield Label(self._label)
 
-    @property
-    def value(self) -> str:
-        return self._value
-
-    @on(events.Key)
-    @on(events.Click)
-    async def _button_pressed(self, event: events.Key | events.Click) -> None:
-        if isinstance(event, events.Key) and event.name != "enter":
-            return
-
+    async def action_press_buton(self) -> None:
         self.add_class(CSSClass.SELECTED)
 
         if not self._persist_click:
@@ -94,6 +95,10 @@ class MenuIslandButton(BaseWidget, can_focus=True):
             self.remove_class(CSSClass.SELECTED)
 
         self.post_message(self.Pressed(value=self._value))
+
+    @property
+    def value(self) -> str:
+        return self._value
 
     @on(events.Enter)
     @on(events.Focus)
