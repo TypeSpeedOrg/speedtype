@@ -87,6 +87,7 @@ class MenuIslandButton(BaseWidget, can_focus=True):
     def compose(self) -> ComposeResult:
         yield Label(self._label)
 
+    @on(events.Click)
     async def action_press_buton(self) -> None:
         self.add_class(CSSClass.SELECTED)
 

@@ -1,6 +1,7 @@
 import asyncio
 from collections.abc import Coroutine
 from contextlib import suppress
+from datetime import datetime, timedelta
 from enum import StrEnum, auto
 
 from textual import events, on, work
@@ -129,6 +130,7 @@ class TextInput(BaseWidget, can_focus=True):
         self._correct_chars_collector = 0
         self._typed_chars_per_second = []
 
+        self._pause_typing_until: datetime = datetime.now()
         self._is_typing = False
 
     def compose(self) -> ComposeResult:
@@ -176,6 +178,7 @@ class TextInput(BaseWidget, can_focus=True):
         self._is_typing = False
 
         if is_finished:
+            self._pause_typing_until = datetime.now() + timedelta(seconds=0.5)
             self.post_message(
                 self.TypingFinished(
                     typed_words=[
@@ -343,6 +346,9 @@ class TextInput(BaseWidget, can_focus=True):
         self,
         event: Key,
     ) -> None:
+        if datetime.now() < self._pause_typing_until:
+            return
+
         if not event.is_printable and event.name != "backspace":
             return
 
