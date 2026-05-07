@@ -2,7 +2,8 @@ from textual import on
 from textual.app import ComposeResult
 from textual.message import Message
 
-from speedtype.ui.widgets.menu_island import MenuIsland, MenuIslandButton
+from speedtype.ui.widgets.menu_island.button import MenuIslandButton
+from speedtype.ui.widgets.menu_island.island import MenuIsland
 
 
 class ReloadTextButton(MenuIsland):
@@ -17,5 +18,5 @@ class ReloadTextButton(MenuIsland):
         )
 
     @on(MenuIslandButton.Pressed)
-    def button_pressed(self) -> None:
+    def _button_pressed(self) -> None:
         self.post_message(self.Pressed())

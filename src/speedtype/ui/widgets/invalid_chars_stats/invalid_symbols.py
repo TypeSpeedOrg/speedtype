@@ -4,26 +4,24 @@ from textual.containers import Container
 from textual.reactive import var
 from textual.widgets import Label
 
-from speedtype.ui.constants.colors import BLOCK_BG, BLOCK_COLOR, BLOCK_HOVER_COLOR
 from speedtype.ui.types.session_stats import InputStats
 from speedtype.ui.widgets.base import BaseWidget
 from speedtype.ui.widgets.invalid_chars_stats.invalid_symbol_bar import InvalidSymbolBar
 
 
 class InvalidCharsStats(BaseWidget):
-    DEFAULT_CSS = f"""
-    InvalidCharsStats {{
+    DEFAULT_CSS = """
+    InvalidCharsStats {
         padding: 1 3 1 1;
         layout: vertical;
-        background: {BLOCK_BG};
+        background: $surface;
 
-        .title {{
-            color: {BLOCK_COLOR};
+        .title {
             text-align: center;
             width: 100%;
-        }}
+        }
 
-        .invalid-bars {{
+        .invalid-bars {
             layout: grid;
             grid-size: 6;
             grid-rows: 1;
@@ -31,26 +29,20 @@ class InvalidCharsStats(BaseWidget):
             padding: 1 2;
             overflow: hidden auto;
             scrollbar-size-vertical: 1;
-            scrollbar-background: {BLOCK_BG};
-            scrollbar-background-hover: {BLOCK_BG};
-            scrollbar-background-active: {BLOCK_BG};
-            scrollbar-color: {BLOCK_COLOR};
-            scrollbar-color-hover: {BLOCK_HOVER_COLOR};
-            scrollbar-color-active: {BLOCK_HOVER_COLOR};
             scrollbar-gutter: auto;
-        }}
+        }
 
-        .no-mistakes {{
+        .no-mistakes {
             display: none;
             width: 100%;
             height: 100%;
             align: center middle;
 
-            Label {{
-                color: {BLOCK_COLOR};
-            }}
-        }}
-    }}
+            Label {
+                color: $surface;
+            }
+        }
+    }
     """
     input_stats: var[InputStats] = var(None, init=False)
 

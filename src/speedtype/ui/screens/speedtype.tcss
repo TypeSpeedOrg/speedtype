@@ -1,6 +1,14 @@
 /* ==== Modifiers ==== */
 
 .selected {
-    color: #ffd43b;
+    color: $primary;
     text-style: bold;
+}
+
+FooterKey:hover {
+    background: $hover-background;
+    color: $hover-foreground;
+    .footer-key--key {
+        background: $hover-background;
+    }
 }

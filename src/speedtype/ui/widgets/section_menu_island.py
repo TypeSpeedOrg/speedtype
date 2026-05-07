@@ -1,13 +1,13 @@
 from typing import NamedTuple
 
 from rich.repr import Result
-from textual import on
+from textual import events, on
 from textual.app import ComposeResult
 from textual.message import Message
 
 from speedtype.ui.constants.classes import CSSClass
 from speedtype.ui.widgets.base import BaseWidget
-from speedtype.ui.widgets.menu_island import MenuIslandButton
+from speedtype.ui.widgets.menu_island.button import MenuIslandButton
 
 
 type SectionOptions = tuple[SectionOption, ...]
@@ -101,7 +101,7 @@ class SectionMenuIsland(BaseWidget):
             yield button
 
     @on(MenuIslandButton.Pressed)
-    def button_pressed(
+    def _button_pressed(
         self,
         event: MenuIslandButton.Pressed,
     ) -> None:
@@ -159,7 +159,8 @@ class SectionMenuIsland(BaseWidget):
 
         event.stop()
 
-    def on_mount(self) -> None:
+    @on(events.Mount)
+    def _post_selected_options(self) -> None:
         for option in self._selected_options:
             self.post_message(
                 self.OptionSelected(

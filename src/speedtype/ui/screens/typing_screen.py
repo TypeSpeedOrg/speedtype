@@ -1,8 +1,8 @@
-from textual import on
+from textual import events, on
 from textual.app import ComposeResult
 from textual.containers import Container
+from textual.widgets import Footer
 
-from speedtype.ui.constants.colors import APP_BG
 from speedtype.ui.constants.screens import AppScreen
 from speedtype.ui.screens.base import BaseScreen
 from speedtype.ui.screens.session_stats import TypingSessionStats
@@ -16,29 +16,28 @@ from speedtype.ui.widgets.typing_area.text_input import TextInput
 
 
 class TypingScreen(BaseScreen):
-    DEFAULT_CSS = f"""
-    TypingScreen {{
-        background: {APP_BG};
+    DEFAULT_CSS = """
+    TypingScreen {
         layout: vertical;
         overflow: hidden auto;
 
-        .top {{
+        .top {
             min-height: 0;
             max-height: 12;
-        }}
+        }
 
-        .middle {{
+        .middle {
             height: 25;
-        }}
+        }
 
-        .bottom {{
+        .bottom {
             min-height: 7;
             layout: horizontal;
             width: 100%;
             align: center top;
             padding: 1 0 0 0;
-        }}
-    }}
+        }
+    }
     """
 
     def compose(self) -> ComposeResult:
@@ -53,30 +52,36 @@ class TypingScreen(BaseScreen):
             yield TextConfiguration()
             yield StopTypeButton()
 
-    def on_mount(self) -> None:
+        yield Footer()
+
+    @on(events.Mount)
+    def _hide_stop_button(self) -> None:
         self.query_one(StopTypeButton).hide()
 
     @on(ReloadTextButton.Pressed)
-    def reload_button_pressed(self) -> None:
+    def _reload_button_pressed(self) -> None:
         self.query_one(TypingArea).regenerate_text()
 
     @on(StopTypeButton.Stopped)
-    def stop_button_pressed(self) -> None:
+    def _stop_button_pressed(self) -> None:
         self.query_one(TypingArea).stop()
+
+    @on(TextInput.TypingStopped)
+    def _typing_stopped(self) -> None:
         self.query_one(StopTypeButton).hide()
         self.query_one(ReloadTextButton).show()
         self.query_one(NavigationSection).show()
         self.query_one(TextConfiguration).show()
 
     @on(TextInput.TypingStarted)
-    def typing_started(self) -> None:
+    def _typing_started(self) -> None:
         self.query_one(StopTypeButton).show()
         self.query_one(ReloadTextButton).hide()
         self.query_one(NavigationSection).hide()
         self.query_one(TextConfiguration).hide()
 
     @on(TextInput.TypingFinished)
-    def typing_finished(
+    def _typing_finished(
         self,
         event: TextInput.TypingFinished,
     ) -> None:
@@ -95,7 +100,7 @@ class TypingScreen(BaseScreen):
         self.app.switch_screen(AppScreen.TYPING_SESSION_STATS)
 
     @on(TextConfiguration.ConfigUpdated)
-    def text_configuration_updated(
+    def _text_configuration_updated(
         self,
         event: TextConfiguration.ConfigUpdated,
     ) -> None:

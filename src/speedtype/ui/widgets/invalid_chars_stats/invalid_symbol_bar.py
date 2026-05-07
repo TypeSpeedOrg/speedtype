@@ -3,32 +3,31 @@ from textual.containers import Container
 from textual.widgets import Label
 
 from speedtype.ui.constants.classes import CSSClass
-from speedtype.ui.constants.colors import INVALID_TEXT_BG, INVALID_TEXT_COLOR
 from speedtype.ui.widgets.base import BaseWidget
 
 
 class InvalidSymbolBar(BaseWidget):
-    DEFAULT_CSS = f"""
-    InvalidSymbolBar {{
-        .invalid-symbol-bar {{
+    DEFAULT_CSS = """
+    InvalidSymbolBar {
+        .invalid-symbol-bar {
             layout: grid;
             grid-size: 2;
             grid-columns: auto 1fr;
             grid-gutter: 0 1;
 
-            .invalid-symbol {{
+            .invalid-symbol {
                 text-align: center;
                 width: 100%;
-                color: {INVALID_TEXT_COLOR};
-            }}
+                color: $invalid-text-color;
+            }
 
-            .invalid-symbol-amount {{
+            .invalid-symbol-amount {
                 text-align: center;
                 width: 100%;
-                background: {INVALID_TEXT_BG};
-            }}
-        }}
-    }}
+                background: $invalid-text-background;
+            }
+        }
+    }
     """
 
     def __init__(

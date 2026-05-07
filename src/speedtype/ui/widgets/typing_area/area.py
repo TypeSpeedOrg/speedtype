@@ -2,17 +2,12 @@ import asyncio
 import random
 from collections.abc import Coroutine
 
-from textual import on, work
+from textual import events, on, work
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.reactive import var
 from textual.worker import Worker
 
-from speedtype.ui.constants.colors import (
-    BLOCK_BG,
-    BLOCK_COLOR,
-    SELECTED_COLOR,
-)
 from speedtype.ui.widgets.base import BaseWidget
 from speedtype.ui.widgets.text_configuration import TextConfig, TextConfiguration
 from speedtype.ui.widgets.typing_area.text_input import TextInput
@@ -63,7 +58,6 @@ class TypingArea(BaseWidget):
     TypingArea {{
         width: 100%;
         height: 100%;
-        color: {BLOCK_COLOR};
         align: center middle;
 
         .wrapper {{
@@ -71,16 +65,16 @@ class TypingArea(BaseWidget):
             width: auto;
             padding: 1 0;
 
-            border: hkey {BLOCK_BG};
+            border: hkey $surface;
             border-title-align: left;
-            border-title-color: {SELECTED_COLOR};
+            border-title-color: $primary;
             border-title-style: bold;
-            border-title-background: {BLOCK_BG};
+            border-title-background: $surface;
 
             border-subtitle-align: right;
-            border-subtitle-color: {SELECTED_COLOR};
+            border-subtitle-color: $primary;
             border-subtitle-style: bold;
-            border-subtitle-background: {BLOCK_BG};
+            border-subtitle-background: $surface;
 
             .text {{
                 width: {LINE_WIDTH};
@@ -123,24 +117,8 @@ class TypingArea(BaseWidget):
             self.query_one(Container).border_subtitle = f" {', '.join(config_values)} "
             self.regenerate_text()
 
-    def on_mount(self) -> None:
-        self.regenerate_text()
-
-    @on(TextInput.TypingStarted)
-    def _typing_started(self) -> None:
-        self._timer = self._start_timer()
-
-    @on(TextInput.TypingFinished)
-    def _typing_finished(self) -> None:
-        self.regenerate_text()
-
     def stop(self) -> None:
-        self.query_one(TextInput).stop()
-        self._timer.cancel()
-        self._update_timer(
-            seconds=self.text_config[TextConfiguration.Configuration.TIME][0],
-        )
-        self.regenerate_text()
+        self.query_one(TextInput).stop(is_finished=False)
 
     def _update_timer(
         self,
@@ -156,19 +134,30 @@ class TypingArea(BaseWidget):
         random.shuffle(words)
         return " ".join(words)
 
+    @on(events.Mount)
+    def _load_initial_text(self) -> None:
+        self.regenerate_text()
+
+    @on(TextInput.TypingStarted)
+    def _typing_started(self) -> None:
+        self._timer = self._start_timer()
+
+    @on(TextInput.TypingFinished)
+    @on(TextInput.TypingStopped)
+    def _reset_typing_area(self) -> None:
+        self._timer.cancel()
+        self._update_timer(seconds=self.text_config[TextConfiguration.Configuration.TIME][0])
+        self.regenerate_text()
+
     @work(exclusive=True, group="regenerate_text")
     async def regenerate_text(self) -> None:
         self.text = await self._load_input_text()
 
     @work(exclusive=True, group="timer")
     async def _start_timer(self) -> None:
-        remaining_seconds = int(
-            self.text_config[TextConfiguration.Configuration.TIME][0],
-        )
+        remaining_seconds = int(self.text_config[TextConfiguration.Configuration.TIME][0])
 
         while remaining_seconds > 0:
             await asyncio.sleep(1)
             remaining_seconds -= 1
             self._update_timer(seconds=remaining_seconds)
-
-        self._update_timer(seconds=self.text_config[TextConfiguration.Configuration.TIME][0])

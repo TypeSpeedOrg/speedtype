@@ -2,8 +2,8 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.reactive import var
+from textual.widgets import Footer
 
-from speedtype.ui.constants.colors import APP_BG
 from speedtype.ui.constants.screens import AppScreen
 from speedtype.ui.screens.base import BaseScreen
 from speedtype.ui.types.session_stats import InputStats
@@ -14,22 +14,21 @@ from speedtype.ui.widgets.wpm_plot.wpm_plot import WPMPlot
 
 
 class TypingSessionStats(BaseScreen):
-    DEFAULT_CSS = f"""
-    TypingSessionStats {{
-        background: {APP_BG};
+    DEFAULT_CSS = """
+    TypingSessionStats {
         layout: vertical;
 
-        .top {{
+        .top {
             min-height: 0;
             max-height: 12;
-        }}
+        }
 
-        .middle {{
+        .middle {
             align: center middle;
             width: 100%;
             height: auto;
 
-            .stats {{
+            .stats {
                 height: 25;
                 max-width: 140;
                 layout: grid;
@@ -38,20 +37,20 @@ class TypingSessionStats(BaseScreen):
                 grid-rows: 13 12;
                 grid-gutter: 1 2;
 
-                WPMPlot {{
+                WPMPlot {
                     column-span: 2;
-                }}
-            }}
-        }}
+                }
+            }
+        }
 
-        .bottom {{
+        .bottom {
             min-height: 7;
             layout: horizontal;
             width: 100%;
             align: center top;
             padding: 1 0 0 0;
-        }}
-    }}
+        }
+    }
     """
     input_stats: var[InputStats] = var(None, init=False)
 
@@ -69,6 +68,8 @@ class TypingSessionStats(BaseScreen):
         with Container(classes="bottom"):
             yield CloseButton()
 
+        yield Footer()
+
     @on(CloseButton.Closed)
-    def close_stats(self) -> None:
+    def _close_stats(self) -> None:
         self.app.switch_screen(AppScreen.TYPING_SCREEN)
