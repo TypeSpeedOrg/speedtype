@@ -331,6 +331,13 @@ class TextInput(BaseWidget, can_focus=True):
         if not self._is_typing:
             self._input_animation = self._waiting_to_input_animation()
 
+        if self._is_typing:
+            self._animate_input(
+                value=1,
+                easing="in_out_quad",
+                duration=self._get_remaining_input_animation_duration(final_value=1),
+            )
+
     @on(events.Blur)
     def _disable_animation(self) -> None:
         self._input_animation.cancel()
